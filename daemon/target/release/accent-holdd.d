@@ -1,0 +1,1 @@
+/home/sun/DEVELOPEMENT/accent-hold/daemon/target/release/accent-holdd: /home/sun/DEVELOPEMENT/accent-hold/daemon/src/dbus.rs /home/sun/DEVELOPEMENT/accent-hold/daemon/src/main.rs /home/sun/DEVELOPEMENT/accent-hold/daemon/src/statemachine.rs /home/sun/DEVELOPEMENT/accent-hold/daemon/src/table.rs
