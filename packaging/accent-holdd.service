@@ -1,0 +1,12 @@
+[Unit]
+Description=accent-hold key detection daemon
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+ExecStart=/usr/local/bin/accent-holdd
+Restart=on-failure
+RestartSec=2
+
+[Install]
+WantedBy=graphical-session.target
