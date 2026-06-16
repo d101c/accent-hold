@@ -22,11 +22,12 @@ fi
 echo "==> Ensure uinput module loads at boot"
 echo uinput | sudo tee /etc/modules-load.d/uinput.conf >/dev/null
 
-echo "==> systemd --user service"
+echo "==> systemd --user service (installé mais PAS activé : test manuel d'abord)"
 install -Dm644 "$HERE/packaging/accent-holdd.service" \
     "$HOME/.config/systemd/user/accent-holdd.service"
 systemctl --user daemon-reload
-systemctl --user enable accent-holdd.service
+# NOTE: on n'active PAS le service ici. Le daemon grabbe le clavier ; on le teste
+# d'abord manuellement avec un filet de sécurité (timeout) avant l'activation auto.
 
 echo "==> GNOME extension"
 DEST="$HOME/.local/share/gnome-shell/extensions/accent-hold@local"
@@ -34,11 +35,23 @@ mkdir -p "$DEST"
 cp "$HERE/extension/"* "$DEST/"
 cp "$HERE/accents.json" "$DEST/"
 
-cat <<'EOF'
+BIN=/usr/local/bin/accent-holdd
+cat <<EOF
 
 Installation terminée.
+
 1) Déconnecte-toi puis reconnecte-toi (groupe input + détection de l'extension).
-2) Active l'extension :  gnome-extensions enable accent-hold@local
-3) Démarre le daemon  :  systemctl --user start accent-holdd
-4) Teste : maintiens 'e' dans un éditeur ou un terminal.
+
+2) Active l'extension :
+     gnome-extensions enable accent-hold@local
+
+3) TEST DU DAEMON avec filet de sécurité (s'auto-tue après 25s même si le
+   clavier est grabbé — garde une souris à portée). SANS sudo : le groupe
+   'input' + la règle udev suffisent, et le bus de session reste accessible :
+     timeout 25 env ACCENT_HOLD_MS=450 $BIN
+   Puis maintiens 'e' dans un éditeur ET dans un terminal -> popup d'accents.
+
+4) Si le test est concluant, active le démarrage automatique :
+     systemctl --user enable --now accent-holdd
+   (le daemon tourne alors sans sudo grâce au groupe input + règle udev)
 EOF
