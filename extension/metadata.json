@@ -1,0 +1,6 @@
+{
+  "uuid": "accent-hold@local",
+  "name": "Accent Hold",
+  "description": "Press-and-hold accent popup (paired with accent-holdd daemon)",
+  "shell-version": ["50"]
+}
