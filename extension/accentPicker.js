@@ -158,12 +158,16 @@ export class AccentPicker {
         if (this._isModifier(sym))
             return Clutter.EVENT_STOP;
 
-        const u = event.get_key_unicode(); // gère Shift -> majuscule
-        if (!u) {
+        // En GJS, get_key_unicode() renvoie un gunichar marshallé en CHAÎNE d'un
+        // caractère (déjà la lettre, casse incluse), pas un codepoint numérique.
+        // On reste robuste si une version renvoyait un nombre.
+        let ch = event.get_key_unicode();
+        if (typeof ch === 'number')
+            ch = ch > 0 ? String.fromCodePoint(ch) : '';
+        if (!ch) {
             this._close();
             return Clutter.EVENT_STOP;
         }
-        const ch = String.fromCodePoint(u);
         const table = this._getTable() || {};
         const variants = table[ch];
         if (variants && variants.length > 0)
