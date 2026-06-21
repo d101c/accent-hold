@@ -1,0 +1,152 @@
+# French translation for Accent Hold.
+# Copyright (C) 2026 Accent Hold contributors
+# This file is distributed under the same license as the accent-hold package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: accent-hold\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-21 00:00+0000\n"
+"PO-Revision-Date: 2026-06-21 00:00+0000\n"
+"Last-Translator: Julien Griffit <julien.griffit@gmail.com>\n"
+"Language-Team: French <fr@li.org>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#. accentPicker.js — popup hint
+msgid "Type a letter…"
+msgstr "Tapez une lettre…"
+
+#. panelIndicator.js / prefs.js — extension name
+msgid "Accent Hold"
+msgstr "Accent Hold"
+
+#. panelIndicator.js / prefs.js — enabled toggle
+msgid "Enabled"
+msgstr "Activé"
+
+#. panelIndicator.js — menu entry
+msgid "Preferences"
+msgstr "Préférences"
+
+#. prefs.js — layout labels
+msgid "French (fr)"
+msgstr "Français (fr)"
+
+msgid "French (oss variant)"
+msgstr "Français (variante oss)"
+
+msgid "English US (us)"
+msgstr "Anglais US (us)"
+
+msgid "English US International"
+msgstr "Anglais US international"
+
+msgid "English GB (gb)"
+msgstr "Anglais GB (gb)"
+
+msgid "German (de)"
+msgstr "Allemand (de)"
+
+msgid "Spanish (es)"
+msgstr "Espagnol (es)"
+
+msgid "Italian (it)"
+msgstr "Italien (it)"
+
+msgid "Portuguese (pt)"
+msgstr "Portugais (pt)"
+
+msgid "Belgian (be)"
+msgstr "Belge (be)"
+
+msgid "Swiss (ch)"
+msgstr "Suisse (ch)"
+
+msgid "Canadian (ca)"
+msgstr "Canadien (ca)"
+
+#. prefs.js — shortcut group
+msgid "Shortcut"
+msgstr "Raccourci"
+
+msgid "Key that triggers the accent picker."
+msgstr "Touche déclenchant le sélecteur d’accents."
+
+msgid "Enable or disable the shortcut."
+msgstr "Active ou inhibe le raccourci."
+
+msgid "Combination"
+msgstr "Combinaison"
+
+msgid "Click the button, then press the combination."
+msgstr "Cliquez sur le bouton puis appuyez sur la combinaison."
+
+msgid "Disabled"
+msgstr "Désactivé"
+
+msgid "Press a key…"
+msgstr "Appuyez sur une touche…"
+
+msgid "Accelerator (text)"
+msgstr "Accélérateur (texte)"
+
+#. prefs.js — behavior group
+msgid "Behavior"
+msgstr "Comportement"
+
+msgid "Delay before display"
+msgstr "Latence avant affichage"
+
+msgid "Milliseconds before the popup appears."
+msgstr "Millisecondes avant l’apparition de la popup."
+
+msgid "Auto-close (failsafe)"
+msgstr "Auto-fermeture (failsafe)"
+
+msgid "Milliseconds before automatic close."
+msgstr "Millisecondes avant fermeture automatique."
+
+#. prefs.js — accents group
+msgid "Accentable characters"
+msgstr "Caractères accentuables"
+
+msgid "JSON table: base key → list of accented variants."
+msgstr "Table JSON : touche de base → liste de variantes accentuées."
+
+msgid "Modified = saved automatically."
+msgstr "Modifié = enregistré automatiquement."
+
+msgid "Save"
+msgstr "Enregistrer"
+
+msgid "Reset"
+msgstr "Réinitialiser"
+
+msgid "Built-in default table active."
+msgstr "Table intégrée par défaut active."
+
+msgid "Invalid JSON — not saved: "
+msgstr "JSON invalide — non enregistré : "
+
+msgid "Saved."
+msgstr "Enregistré."
+
+msgid "Reset to the built-in table."
+msgstr "Réinitialisé à la table intégrée."
+
+#. prefs.js — keyboards group
+msgid "Keyboards"
+msgstr "Claviers"
+
+msgid "Layouts where the shortcut is active (none checked = all active)."
+msgstr "Layouts où le raccourci est actif (aucun coché = tous actifs)."
+
+msgid "No xkb layout detected"
+msgstr "Aucun layout xkb détecté"
+
+msgid "The shortcut is active on all keyboards."
+msgstr "Le raccourci est actif sur tous les claviers."

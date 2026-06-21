@@ -1,0 +1,152 @@
+# Accent Hold — translation template.
+# Copyright (C) 2026 Accent Hold contributors
+# This file is distributed under the same license as the accent-hold package.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: accent-hold\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-06-21 00:00+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. accentPicker.js — popup hint
+msgid "Type a letter…"
+msgstr ""
+
+#. panelIndicator.js / prefs.js — extension name
+msgid "Accent Hold"
+msgstr ""
+
+#. panelIndicator.js / prefs.js — enabled toggle
+msgid "Enabled"
+msgstr ""
+
+#. panelIndicator.js — menu entry
+msgid "Preferences"
+msgstr ""
+
+#. prefs.js — layout labels
+msgid "French (fr)"
+msgstr ""
+
+msgid "French (oss variant)"
+msgstr ""
+
+msgid "English US (us)"
+msgstr ""
+
+msgid "English US International"
+msgstr ""
+
+msgid "English GB (gb)"
+msgstr ""
+
+msgid "German (de)"
+msgstr ""
+
+msgid "Spanish (es)"
+msgstr ""
+
+msgid "Italian (it)"
+msgstr ""
+
+msgid "Portuguese (pt)"
+msgstr ""
+
+msgid "Belgian (be)"
+msgstr ""
+
+msgid "Swiss (ch)"
+msgstr ""
+
+msgid "Canadian (ca)"
+msgstr ""
+
+#. prefs.js — shortcut group
+msgid "Shortcut"
+msgstr ""
+
+msgid "Key that triggers the accent picker."
+msgstr ""
+
+msgid "Enable or disable the shortcut."
+msgstr ""
+
+msgid "Combination"
+msgstr ""
+
+msgid "Click the button, then press the combination."
+msgstr ""
+
+msgid "Disabled"
+msgstr ""
+
+msgid "Press a key…"
+msgstr ""
+
+msgid "Accelerator (text)"
+msgstr ""
+
+#. prefs.js — behavior group
+msgid "Behavior"
+msgstr ""
+
+msgid "Delay before display"
+msgstr ""
+
+msgid "Milliseconds before the popup appears."
+msgstr ""
+
+msgid "Auto-close (failsafe)"
+msgstr ""
+
+msgid "Milliseconds before automatic close."
+msgstr ""
+
+#. prefs.js — accents group
+msgid "Accentable characters"
+msgstr ""
+
+msgid "JSON table: base key → list of accented variants."
+msgstr ""
+
+msgid "Modified = saved automatically."
+msgstr ""
+
+msgid "Save"
+msgstr ""
+
+msgid "Reset"
+msgstr ""
+
+msgid "Built-in default table active."
+msgstr ""
+
+msgid "Invalid JSON — not saved: "
+msgstr ""
+
+msgid "Saved."
+msgstr ""
+
+msgid "Reset to the built-in table."
+msgstr ""
+
+#. prefs.js — keyboards group
+msgid "Keyboards"
+msgstr ""
+
+msgid "Layouts where the shortcut is active (none checked = all active)."
+msgstr ""
+
+msgid "No xkb layout detected"
+msgstr ""
+
+msgid "The shortcut is active on all keyboards."
+msgstr ""

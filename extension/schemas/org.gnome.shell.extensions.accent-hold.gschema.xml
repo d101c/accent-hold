@@ -29,6 +29,11 @@
       <summary>Table d'accents (JSON)</summary>
       <description>JSON optionnel surchargeant la table intégrée. Vide = table intégrée extension/accents.json.</description>
     </key>
+    <key name="show-indicator" type="b">
+      <default>true</default>
+      <summary>Indicateur dans la barre du haut</summary>
+      <description>Affiche une icône et un menu dans la barre supérieure de GNOME Shell.</description>
+    </key>
     <key name="layouts" type="as">
       <default>[]</default>
       <summary>Claviers activés</summary>

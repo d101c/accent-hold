@@ -5,30 +5,34 @@ import Gio from 'gi://Gio';
 import GObject from 'gi://GObject';
 import GLib from 'gi://GLib';
 
-import {ExtensionPreferences} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-// Libellés lisibles pour quelques layouts xkb courants ; sinon on affiche l'id brut.
-const LAYOUT_LABELS = {
-    'fr': 'Français (fr)',
-    'fr+oss': 'Français (variante oss)',
-    'us': 'Anglais US (us)',
-    'us+intl': 'Anglais US international',
-    'gb': 'Anglais GB (gb)',
-    'de': 'Allemand (de)',
-    'es': 'Espagnol (es)',
-    'it': 'Italien (it)',
-    'pt': 'Portugais (pt)',
-    'be': 'Belge (be)',
-    'ch': 'Suisse (ch)',
-    'ca': 'Canadien (ca)',
-};
+// Libellés lisibles pour quelques layouts xkb courants ; sinon on affiche l'id
+// brut. Fonction (et non const) pour que _() s'exécute À L'USAGE, après que le
+// domaine gettext soit résolu — pas au moment de l'import du module.
+function layoutLabels() {
+    return {
+        'fr': _('French (fr)'),
+        'fr+oss': _('French (oss variant)'),
+        'us': _('English US (us)'),
+        'us+intl': _('English US International'),
+        'gb': _('English GB (gb)'),
+        'de': _('German (de)'),
+        'es': _('Spanish (es)'),
+        'it': _('Italian (it)'),
+        'pt': _('Portuguese (pt)'),
+        'be': _('Belgian (be)'),
+        'ch': _('Swiss (ch)'),
+        'ca': _('Canadian (ca)'),
+    };
+}
 
 export default class AccentHoldPreferences extends ExtensionPreferences {
     fillPreferencesWindow(window) {
         const settings = this.getSettings();
 
         const page = new Adw.PreferencesPage({
-            title: 'Accent Hold',
+            title: _('Accent Hold'),
             icon_name: 'preferences-desktop-keyboard-shortcuts-symbolic',
         });
         window.add(page);
@@ -42,15 +46,15 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
     // ---------------------------------------------------------------- Raccourci
     _buildShortcutGroup(page, settings) {
         const group = new Adw.PreferencesGroup({
-            title: 'Raccourci',
-            description: 'Touche déclenchant le sélecteur d’accents.',
+            title: _('Shortcut'),
+            description: _('Key that triggers the accent picker.'),
         });
         page.add(group);
 
         // enabled : SwitchRow lié directement.
         const enabledRow = new Adw.SwitchRow({
-            title: 'Activé',
-            subtitle: 'Active ou inhibe le raccourci.',
+            title: _('Enabled'),
+            subtitle: _('Enable or disable the shortcut.'),
         });
         group.add(enabledRow);
         settings.bind('enabled', enabledRow, 'active',
@@ -58,8 +62,8 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
 
         // trigger : ActionRow + bouton de capture (Gtk.EventControllerKey).
         const triggerRow = new Adw.ActionRow({
-            title: 'Combinaison',
-            subtitle: 'Cliquez sur le bouton puis appuyez sur la combinaison.',
+            title: _('Combination'),
+            subtitle: _('Click the button, then press the combination.'),
         });
 
         const button = new Gtk.Button({
@@ -69,7 +73,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
 
         const accelLabel = (arr) => {
             const a = arr && arr.length ? arr[0] : '';
-            return a ? a : 'Désactivé';
+            return a ? a : _('Disabled');
         };
         const refreshButton = () => {
             button.label = accelLabel(settings.get_strv('trigger'));
@@ -91,7 +95,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
                 return;
             }
             capturing = true;
-            button.label = 'Appuyez sur une touche…';
+            button.label = _('Press a key…');
             button.grab_focus();
         });
 
@@ -132,7 +136,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
 
         // Repli : EntryRow éditable pour saisir l'accélérateur à la main.
         const entryRow = new Adw.EntryRow({
-            title: 'Accélérateur (texte)',
+            title: _('Accelerator (text)'),
         });
         const syncEntry = () => {
             const arr = settings.get_strv('trigger');
@@ -188,13 +192,13 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
     // ------------------------------------------------------------- Comportement
     _buildBehaviorGroup(page, settings) {
         const group = new Adw.PreferencesGroup({
-            title: 'Comportement',
+            title: _('Behavior'),
         });
         page.add(group);
 
         const delayRow = new Adw.SpinRow({
-            title: 'Latence avant affichage',
-            subtitle: 'Millisecondes avant l’apparition de la popup.',
+            title: _('Delay before display'),
+            subtitle: _('Milliseconds before the popup appears.'),
             adjustment: new Gtk.Adjustment({
                 lower: 0,
                 upper: 1000,
@@ -207,8 +211,8 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
             Gio.SettingsBindFlags.DEFAULT);
 
         const timeoutRow = new Adw.SpinRow({
-            title: 'Auto-fermeture (failsafe)',
-            subtitle: 'Millisecondes avant fermeture automatique.',
+            title: _('Auto-close (failsafe)'),
+            subtitle: _('Milliseconds before automatic close.'),
             adjustment: new Gtk.Adjustment({
                 lower: 1000,
                 upper: 30000,
@@ -224,8 +228,8 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
     // ------------------------------------------------- Caractères accentuables
     _buildAccentsGroup(page, settings) {
         const group = new Adw.PreferencesGroup({
-            title: 'Caractères accentuables',
-            description: 'Table JSON : touche de base → liste de variantes accentuées.',
+            title: _('Accentable characters'),
+            description: _('JSON table: base key → list of accented variants.'),
         });
         page.add(group);
 
@@ -261,15 +265,15 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         // Ligne d'état + boutons.
         const statusRow = new Adw.ActionRow({
             title: 'JSON',
-            subtitle: 'Modifié = enregistré automatiquement.',
+            subtitle: _('Modified = saved automatically.'),
         });
 
         const saveButton = new Gtk.Button({
-            label: 'Enregistrer',
+            label: _('Save'),
             valign: Gtk.Align.CENTER,
         });
         const resetButton = new Gtk.Button({
-            label: 'Réinitialiser',
+            label: _('Reset'),
             valign: Gtk.Align.CENTER,
         });
         resetButton.add_css_class('destructive-action');
@@ -286,17 +290,17 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
             const text = buffer.text.trim();
             if (text === '' || text === defaultJson.trim()) {
                 settings.set_string('accents', '');
-                setStatus('Table intégrée par défaut active.', false);
+                setStatus(_('Built-in default table active.'), false);
                 return;
             }
             try {
                 JSON.parse(text);
             } catch (e) {
-                setStatus('JSON invalide — non enregistré : ' + e.message, true);
+                setStatus(_('Invalid JSON — not saved: ') + e.message, true);
                 return;
             }
             settings.set_string('accents', text);
-            setStatus('Enregistré.', false);
+            setStatus(_('Saved.'), false);
         };
 
         saveButton.connect('clicked', save);
@@ -316,7 +320,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         resetButton.connect('clicked', () => {
             settings.set_string('accents', '');
             buffer.text = defaultJson;
-            setStatus('Réinitialisé à la table intégrée.', false);
+            setStatus(_('Reset to the built-in table.'), false);
         });
 
         statusRow.add_suffix(saveButton);
@@ -341,8 +345,8 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
     // ------------------------------------------------------------------ Claviers
     _buildLayoutsGroup(page, settings) {
         const group = new Adw.PreferencesGroup({
-            title: 'Claviers',
-            description: 'Layouts où le raccourci est actif (aucun coché = tous actifs).',
+            title: _('Keyboards'),
+            description: _('Layouts where the shortcut is active (none checked = all active).'),
         });
         page.add(group);
 
@@ -370,17 +374,18 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
 
         if (sources.length === 0) {
             const empty = new Adw.ActionRow({
-                title: 'Aucun layout xkb détecté',
-                subtitle: 'Le raccourci est actif sur tous les claviers.',
+                title: _('No xkb layout detected'),
+                subtitle: _('The shortcut is active on all keyboards.'),
             });
             group.add(empty);
             return;
         }
 
         const enabledLayouts = () => settings.get_strv('layouts');
+        const labels = layoutLabels();
 
         for (const id of sources) {
-            const label = LAYOUT_LABELS[id] || id;
+            const label = labels[id] || id;
             const row = new Adw.SwitchRow({
                 title: label,
                 subtitle: id,

@@ -16,9 +16,12 @@ import * as KeyboardStatus from 'resource:///org/gnome/shell/ui/status/keyboard.
 export class AccentPicker {
     // getSettings/getTable sont des callbacks (=> Gio.Settings / table objet),
     // pour toujours lire la valeur courante au moment du déclenchement.
-    constructor(getSettings, getTable) {
+    constructor(getSettings, getTable, gettext) {
         this._getSettings = getSettings;
         this._getTable = getTable;
+        // Fonction de traduction fournie par extension.js (gettext lié au
+        // domaine `accent-hold`). Repli identité si absente.
+        this._ = gettext || ((s) => s);
 
         this._actor = null;
         this._grab = null;
@@ -97,7 +100,7 @@ export class AccentPicker {
         });
         this._hint = new St.Label({
             style_class: 'accent-hint',
-            text: 'Tapez une lettre…', // invite : taper la lettre de base
+            text: this._('Type a letter…'), // invite : taper la lettre de base
         });
         this._actor.add_child(this._hint);
 

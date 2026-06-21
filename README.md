@@ -1,4 +1,15 @@
-# accent-hold
+# Accent Hold
+
+> **Type accented and special characters the macOS way — without a daemon or root.**
+> Press a configurable shortcut, type a base letter (`e`, `a`, `c`, `o`, `n` …),
+> then pick the accented variant you want (`é è ê ë`, `ç`, `ñ`, `ô` …) from a clean
+> popup. The chosen character is injected wherever your cursor is — text fields,
+> editors and the terminal included. A built-in preferences panel lets you customize
+> the shortcut, the popup delay, the character table and the active keyboard layouts.
+> Pure GNOME Shell extension — no daemon, no privileges, no dependencies, one-click
+> install from extensions.gnome.org.
+
+---
 
 Popup de variantes accentuées (é è ê ç ô ñ …) pour GNOME, insérées dans
 **n'importe quel champ texte ou terminal**. Pure extension GNOME Shell —
