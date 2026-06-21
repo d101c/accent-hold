@@ -2,6 +2,15 @@
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 
+# NE PAS lancer avec sudo : le script appelle sudo lui-même là où il faut.
+# Lancé en root, $USER vaut 'root' -> usermod ajouterait root (pas toi) au
+# groupe input, et systemctl --user / $HOME viseraient le mauvais compte.
+if [ "$(id -u)" -eq 0 ]; then
+    echo "ERREUR : lance ce script SANS sudo (il demandera sudo quand nécessaire)." >&2
+    echo "        ->  ./install.sh" >&2
+    exit 1
+fi
+
 echo "==> Build daemon"
 ( cd "$HERE/daemon" && cargo build --release )
 

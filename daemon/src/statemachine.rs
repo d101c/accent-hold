@@ -7,8 +7,6 @@ pub enum Input {
     AccentKeyDown { letter: char, t_ms: u64 },
     /// Relâche de cette même lettre.
     AccentKeyUp { t_ms: u64 },
-    /// N'importe quelle autre touche down/up brute (keycode, pressed).
-    Other { code: u16, pressed: bool },
     /// Tick d'horloge (appelé régulièrement par la boucle).
     Tick { t_ms: u64 },
 }
@@ -18,8 +16,6 @@ pub enum Input {
 pub enum Action {
     /// Ré-émettre un tap complet de la lettre (down+up) via uinput.
     EmitTap(char),
-    /// Re-passer un événement brut tel quel (passthrough).
-    Passthrough { code: u16, pressed: bool },
     /// Ouvrir la popup pour cette lettre (appel D-Bus).
     OpenPopup(char),
 }
@@ -70,9 +66,6 @@ impl StateMachine {
                 }
                 vec![]
             }
-            Input::Other { code, pressed } => {
-                vec![Action::Passthrough { code, pressed }]
-            }
         }
     }
 
@@ -109,13 +102,6 @@ mod tests {
         assert_eq!(sm.handle(Input::Tick { t_ms: 450 }), vec![Action::OpenPopup('e')]);
         // relâche après ouverture : pas de tap émis
         assert_eq!(sm.handle(Input::AccentKeyUp { t_ms: 600 }), vec![]);
-    }
-
-    #[test]
-    fn other_keys_passthrough_immediately() {
-        let mut sm = StateMachine::new(450);
-        assert_eq!(sm.handle(Input::Other { code: 30, pressed: true }),
-                   vec![Action::Passthrough { code: 30, pressed: true }]);
     }
 
     #[test]

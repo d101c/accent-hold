@@ -131,10 +131,6 @@ fn run_action(vdev: &mut evdev::uinput::VirtualDevice,
         Action::EmitTap(c) => {
             if let Some(k) = letter_to_key(c) { tap_key(vdev, k)?; }
         }
-        Action::Passthrough { code, pressed } => {
-            let v = if pressed { 1 } else { 0 };
-            vdev.emit(&[InputEvent::new(EventType::KEY, code, v)])?;
-        }
         Action::OpenPopup(c) => {
             if !popup.trigger(c) {
                 for a in sm.on_popup_failed() { run_action(vdev, popup, sm, a)?; }
