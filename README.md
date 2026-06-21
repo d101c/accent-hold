@@ -1,5 +1,7 @@
 # Accent Hold
 
+*Read this in another language: [Français](README.fr.md)*
+
 > **Type accented and special characters the macOS way — without a daemon or root.**
 > Press a configurable shortcut, type a base letter (`e`, `a`, `c`, `o`, `n` …),
 > then pick the accented variant you want (`é è ê ë`, `ç`, `ñ`, `ô` …) from a clean
@@ -11,74 +13,71 @@
 
 ![Accent Hold in action](docs/screenshot.png)
 
----
+## Usage
 
-Popup de variantes accentuées (é è ê ç ô ñ …) pour GNOME, insérées dans
-**n'importe quel champ texte ou terminal**. Pure extension GNOME Shell —
-**aucun daemon, aucun privilège, aucune dépendance**. Installable en **un clic**
-depuis extensions.gnome.org.
+1. `Super+E` (configurable shortcut)
+2. type a base letter: `e`, `a`, `c`, `o`, `u`, `n`, `s`, `i`, `y`, `z`
+3. pick the variant: `1`–`9`, or `←`/`→` + `Enter`, or click. `Esc` cancels.
 
-## Utilisation
+The character is inserted into the field that had focus (terminal included).
+Shift is detected: `E` offers `É È Ê Ë …`.
 
-1. `Super+E` (raccourci configurable)
-2. tape une lettre de base : `e`, `a`, `c`, `o`, `u`, `n`, `s`, `i`, `y`, `z`
-3. choisis la variante : `1`–`9`, ou `←`/`→` + `Entrée`, ou clic. `Échap` annule.
+## Install
 
-Le caractère est inséré dans le champ qui avait le focus (terminal compris).
-Shift est détecté : `E` propose `É È Ê Ë …`.
+### For a user (the simplest way)
+On **extensions.gnome.org**, click **“Install”**. Done. No terminal, no sudo,
+no daemon — it is a pure Shell extension.
 
-## Installer
-
-### Pour un utilisateur (le plus simple)
-Sur **extensions.gnome.org**, clique **« Install »**. Fin. Pas de terminal,
-pas de sudo, pas de daemon — c'est une extension Shell pure.
-
-### Construire le paquet à uploader
+### Build the package to upload
 ```bash
 ./pack.sh
 ```
-Génère `accent-hold@griffit.gmail.com.shell-extension.zip` à la racine du dépôt,
-prêt à être déposé sur <https://extensions.gnome.org/upload/>.
+Produces `accent-hold@griffit.gmail.com.shell-extension.zip` at the repo root,
+ready to be submitted at <https://extensions.gnome.org/upload/>.
 
-### En local (dev)
+### Locally (dev)
 ```bash
 gnome-extensions install --force accent-hold@griffit.gmail.com.shell-extension.zip
-# déconnexion/reconnexion (Wayland), puis :
+# log out / log back in (Wayland), then:
 gnome-extensions enable accent-hold@griffit.gmail.com
 ```
 
-## Préférences
+## Preferences
 
-Panneau de configuration intégré (icône réglages dans l'app *Extensions*, ou
-`gnome-extensions prefs accent-hold@griffit.gmail.com`) :
+Built-in settings panel (the settings icon in the *Extensions* app, or
+`gnome-extensions prefs accent-hold@griffit.gmail.com`):
 
-- **Raccourci** : la touche qui ouvre le sélecteur (défaut `Super+E`).
-- **Activer / inhiber** : coupe le raccourci sans désinstaller l'extension.
-- **Délai (ms)** : latence avant l'affichage de la popup (0–1000).
-- **Caractères** : table des variantes accentuées (JSON), surchargeable.
-- **Claviers** : liste des layouts xkb où l'extension est active (vide = tous).
+- **Shortcut** — the key that opens the picker (default `Super+E`).
+- **Enable / disable** — turns the shortcut off without uninstalling the extension.
+- **Delay (ms)** — latency before the popup appears (0–1000).
+- **Characters** — table of accented variants (JSON), overridable.
+- **Keyboards** — list of xkb layouts where the extension is active (empty = all).
 
-Tout est stocké dans GSettings
-(`org.gnome.shell.extensions.accent-hold`). En CLI :
+Everything is stored in GSettings
+(`org.gnome.shell.extensions.accent-hold`). From the CLI:
 ```bash
 gsettings set org.gnome.shell.extensions.accent-hold trigger "['<Super>grave']"
 ```
 
-## Pourquoi un raccourci et pas « maintenir la lettre » ?
+## Why a shortcut and not “hold the letter”?
 
-Sous Wayland, intercepter le **maintien d'une lettre normale** dans une autre
-application impose un accès clavier privilégié (evdev) → daemon + `sudo` +
-groupe `input` + `udev` : impossible à distribuer simplement. Le raccourci
-global est capté nativement par le Shell, sans aucun privilège — d'où une
-extension installable en un clic.
+On Wayland, intercepting the **hold of a normal letter** inside another
+application requires privileged keyboard access (evdev) → daemon + `sudo` +
+`input` group + `udev`: impossible to distribute simply. A global shortcut is
+captured natively by the Shell, with no privileges — hence a one-click extension.
 
-La variante « vrai maintien de la lettre » (daemon Rust evdev + uinput) existe
-dans [`legacy/`](legacy/) : plus fidèle à macOS, mais install lourde
-(`sudo`, `usermod`, `udev`, logout). Non recommandée pour la distribution.
+The “true hold-the-letter” variant (Rust evdev + uinput daemon) lives in
+[`legacy/`](legacy/): closer to macOS, but a heavy install (`sudo`, `usermod`,
+`udev`, logout). Not recommended for distribution.
 
-## Alternative zéro-install : la touche Compose
-Sans rien installer, GNOME sait déjà taper les accents partout :
+## Zero-install alternative: the Compose key
+
+Without installing anything, GNOME can already type accents everywhere:
 ```bash
 gsettings set org.gnome.desktop.input-sources xkb-options "['compose:caps']"
 ```
-Puis `Compose`(Verr.Maj) `e` `'` → é. Pas de popup, mais zéro dépendance.
+Then `Compose`(Caps Lock) `e` `'` → é. No popup, but zero dependencies.
+
+## License
+
+[GPL-2.0-or-later](LICENSE).
