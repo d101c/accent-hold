@@ -45,12 +45,12 @@ export class AccentPopup {
         const [x, y] = global.get_pointer();
         this._actor.set_position(x, y + 24);
 
-        // En GNOME 50, pushModal renvoie TOUJOURS un Clutter.Grab.
+        // NB GNOME 50 (mutter-18) : Clutter.GrabState et Grab.get_seat_state
+        // N'EXISTENT PAS (vérifié par introspection). Tenter de les utiliser
+        // levait une exception qui laissait le grab pris -> clavier figé.
+        // On ne teste donc pas l'état du grab ; le failsafe 6 s couvre l'échec.
         this._grab = Main.pushModal(this._actor, {actionMode: 1 /* NORMAL */});
-        if (this._grab.get_seat_state() === Clutter.GrabState.NONE) {
-            this._close();
-            return false;
-        }
+        if (!this._grab) { this._close(); return false; }
         this._actor.grab_key_focus();
         this._actor.connect('key-press-event', (_a, e) => this._onKey(e));
 
