@@ -11,7 +11,7 @@
 > Pure GNOME Shell extension — no daemon, no privileges, no dependencies, one-click
 > install from extensions.gnome.org.
 
-![Accent Hold in action](docs/screenshot.png)
+![Accent Hold in action](docs/demo.gif)
 
 ## Usage
 

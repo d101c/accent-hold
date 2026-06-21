@@ -11,7 +11,7 @@
 > actifs. Extension GNOME Shell pure — aucun daemon, aucun privilège, aucune
 > dépendance, installable en un clic depuis extensions.gnome.org.
 
-![Accent Hold en action](docs/screenshot.png)
+![Accent Hold en action](docs/demo.gif)
 
 ## Utilisation
 
