@@ -102,11 +102,18 @@ export class AccentPopup {
     _choose(i) {
         const ch = this._variants[i];
         this._close();          // libère le grab AVANT d'injecter
-        if (ch) this._inject(ch);
+        if (!ch) return;
+        // Diffère d'un cycle : laisse popModal rendre le focus clavier à l'app
+        // cible avant d'injecter (sinon le caractère pourrait se perdre).
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            this._inject(ch);
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     _inject(ch) {
         try {
+            if (!this._vdev) return;
             const keyval = 0x01000000 | ch.codePointAt(0);
             const t = Clutter.get_current_event_time();
             this._vdev.notify_keyval(t, keyval, Clutter.KeyState.PRESSED);
