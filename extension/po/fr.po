@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: accent-hold\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-21 00:00+0000\n"
+"POT-Creation-Date: 2026-06-21 19:53+0200\n"
 "PO-Revision-Date: 2026-06-21 00:00+0000\n"
 "Last-Translator: Julien Griffit <julien.griffit@gmail.com>\n"
 "Language-Team: French <fr@li.org>\n"
@@ -16,137 +16,170 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#. accentPicker.js — popup hint
+#: accentPicker.js:103
 msgid "Type a letter…"
 msgstr "Tapez une lettre…"
 
-#. panelIndicator.js / prefs.js — extension name
-msgid "Accent Hold"
-msgstr "Accent Hold"
-
-#. panelIndicator.js / prefs.js — enabled toggle
-msgid "Enabled"
-msgstr "Activé"
-
-#. panelIndicator.js — menu entry
-msgid "Preferences"
-msgstr "Préférences"
-
-#. prefs.js — layout labels
+#: prefs.js:15
 msgid "French (fr)"
 msgstr "Français (fr)"
 
+#: prefs.js:16
 msgid "French (oss variant)"
 msgstr "Français (variante oss)"
 
+#: prefs.js:17
 msgid "English US (us)"
 msgstr "Anglais US (us)"
 
+#: prefs.js:18
 msgid "English US International"
 msgstr "Anglais US international"
 
+#: prefs.js:19
 msgid "English GB (gb)"
 msgstr "Anglais GB (gb)"
 
+#: prefs.js:20
 msgid "German (de)"
 msgstr "Allemand (de)"
 
+#: prefs.js:21
 msgid "Spanish (es)"
 msgstr "Espagnol (es)"
 
+#: prefs.js:22
 msgid "Italian (it)"
 msgstr "Italien (it)"
 
+#: prefs.js:23
 msgid "Portuguese (pt)"
 msgstr "Portugais (pt)"
 
+#: prefs.js:24
 msgid "Belgian (be)"
 msgstr "Belge (be)"
 
+#: prefs.js:25
 msgid "Swiss (ch)"
 msgstr "Suisse (ch)"
 
+#: prefs.js:26
 msgid "Canadian (ca)"
 msgstr "Canadien (ca)"
 
-#. prefs.js — shortcut group
+#: prefs.js:35 panelIndicator.js:23
+msgid "Accent Hold"
+msgstr "Accent Hold"
+
+#: prefs.js:49
 msgid "Shortcut"
 msgstr "Raccourci"
 
+#: prefs.js:50
 msgid "Key that triggers the accent picker."
 msgstr "Touche déclenchant le sélecteur d’accents."
 
+#: prefs.js:56 panelIndicator.js:37
+msgid "Enabled"
+msgstr "Activé"
+
+#: prefs.js:57
 msgid "Enable or disable the shortcut."
 msgstr "Active ou inhibe le raccourci."
 
+#: prefs.js:65
 msgid "Combination"
 msgstr "Combinaison"
 
+#: prefs.js:66
 msgid "Click the button, then press the combination."
 msgstr "Cliquez sur le bouton puis appuyez sur la combinaison."
 
+#: prefs.js:76
 msgid "Disabled"
 msgstr "Désactivé"
 
+#: prefs.js:98
 msgid "Press a key…"
 msgstr "Appuyez sur une touche…"
 
+#: prefs.js:139
 msgid "Accelerator (text)"
 msgstr "Accélérateur (texte)"
 
-#. prefs.js — behavior group
+#: prefs.js:195
 msgid "Behavior"
 msgstr "Comportement"
 
+#: prefs.js:200
 msgid "Delay before display"
 msgstr "Latence avant affichage"
 
+#: prefs.js:201
 msgid "Milliseconds before the popup appears."
 msgstr "Millisecondes avant l’apparition de la popup."
 
+#: prefs.js:214
 msgid "Auto-close (failsafe)"
 msgstr "Auto-fermeture (failsafe)"
 
+#: prefs.js:215
 msgid "Milliseconds before automatic close."
 msgstr "Millisecondes avant fermeture automatique."
 
-#. prefs.js — accents group
+#: prefs.js:231
 msgid "Accentable characters"
 msgstr "Caractères accentuables"
 
+#: prefs.js:232
 msgid "JSON table: base key → list of accented variants."
 msgstr "Table JSON : touche de base → liste de variantes accentuées."
 
+#: prefs.js:268
 msgid "Modified = saved automatically."
 msgstr "Modifié = enregistré automatiquement."
 
+#: prefs.js:272
 msgid "Save"
 msgstr "Enregistrer"
 
+#: prefs.js:276
 msgid "Reset"
 msgstr "Réinitialiser"
 
+#: prefs.js:293
 msgid "Built-in default table active."
 msgstr "Table intégrée par défaut active."
 
+#: prefs.js:299
 msgid "Invalid JSON — not saved: "
 msgstr "JSON invalide — non enregistré : "
 
+#: prefs.js:303
 msgid "Saved."
 msgstr "Enregistré."
 
+#: prefs.js:323
 msgid "Reset to the built-in table."
 msgstr "Réinitialisé à la table intégrée."
 
-#. prefs.js — keyboards group
+#: prefs.js:348
 msgid "Keyboards"
 msgstr "Claviers"
 
+#: prefs.js:349
 msgid "Layouts where the shortcut is active (none checked = all active)."
 msgstr "Layouts où le raccourci est actif (aucun coché = tous actifs)."
 
+#: prefs.js:377
 msgid "No xkb layout detected"
 msgstr "Aucun layout xkb détecté"
 
+#: prefs.js:378
 msgid "The shortcut is active on all keyboards."
 msgstr "Le raccourci est actif sur tous les claviers."
+
+#: panelIndicator.js:48
+msgid "Preferences"
+msgstr "Préférences"
