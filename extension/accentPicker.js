@@ -144,7 +144,7 @@ export class AccentPicker {
             }
             if (this._phase === 'await-letter')
                 return this._onAwaitLetter(event, sym);
-            return this._onVariants(sym);
+            return this._onVariants(event, sym);
         } catch (e) {
             logError(e, 'accent-hold: key handler');
             this._close(); // sur exception : on libère TOUJOURS le grab
@@ -213,7 +213,7 @@ export class AccentPicker {
         this._highlight();
     }
 
-    _onVariants(sym) {
+    _onVariants(event, sym) {
         if (sym === Clutter.KEY_Left) {
             this._move(-1);
             return Clutter.EVENT_STOP;
@@ -222,12 +222,14 @@ export class AccentPicker {
             this._move(1);
             return Clutter.EVENT_STOP;
         }
-        if (sym === Clutter.KEY_Return || sym === Clutter.KEY_KP_Enter) {
+        if (sym === Clutter.KEY_Return || sym === Clutter.KEY_KP_Enter ||
+            sym === Clutter.KEY_space) {
             this._choose(this._index);
             return Clutter.EVENT_STOP;
         }
-        if (sym >= Clutter.KEY_1 && sym <= Clutter.KEY_9) {
-            const n = sym - Clutter.KEY_1;
+        // Sélection par numéro, INDÉPENDANTE de la disposition clavier.
+        const n = this._digitIndex(event, sym);
+        if (n >= 0) {
             if (n < this._variants.length)
                 this._choose(n);
             return Clutter.EVENT_STOP;
@@ -235,6 +237,24 @@ export class AccentPicker {
         // Toute autre touche annule proprement (jamais coincé).
         this._close();
         return Clutter.EVENT_STOP;
+    }
+
+    // Renvoie l'index 0..8 si la touche désigne le chiffre 1..9, quel que soit
+    // le layout, sinon -1. On se base D'ABORD sur le KEYCODE matériel : la rangée
+    // de chiffres est à la même position physique en AZERTY/QWERTY/QWERTZ
+    // (keycodes X11 10..18). En AZERTY, la touche « 1 » produit « & » (keysym
+    // différent) mais garde le keycode 10 -> la sélection marche sans Shift.
+    // On accepte aussi les keysyms chiffres (QWERTY / Shift+chiffre) et le pavé.
+    _digitIndex(event, sym) {
+        let code = 0;
+        try { code = event.get_key_code(); } catch (_e) {}
+        if (code >= 10 && code <= 18)
+            return code - 10;
+        if (sym >= Clutter.KEY_1 && sym <= Clutter.KEY_9)
+            return sym - Clutter.KEY_1;
+        if (sym >= Clutter.KEY_KP_1 && sym <= Clutter.KEY_KP_9)
+            return sym - Clutter.KEY_KP_1;
+        return -1;
     }
 
     _move(d) {
