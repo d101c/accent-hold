@@ -97,7 +97,7 @@ export class AccentPicker {
         });
         this._hint = new St.Label({
             style_class: 'accent-hint',
-            text: '…', // « … » : tapez la lettre de base
+            text: 'Tapez une lettre…', // invite : taper la lettre de base
         });
         this._actor.add_child(this._hint);
 
