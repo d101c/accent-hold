@@ -39,6 +39,20 @@ fn letter_to_key(c: char) -> Option<Key> {
 fn now_ms(start: Instant) -> u64 { start.elapsed().as_millis() as u64 }
 
 fn main() -> Result<()> {
+    // Mode test : appelle le D-Bus Trigger une fois et sort. Aucun evdev, aucun
+    // grab, aucun privilège -> sert à vérifier le contrat daemon<->popup + le
+    // failsafe 500ms hors session graphique.  Usage: accent-holdd --test-trigger e
+    let args: Vec<String> = std::env::args().collect();
+    if let Some(pos) = args.iter().position(|a| a == "--test-trigger") {
+        let letter = args.get(pos + 1).and_then(|s| s.chars().next()).unwrap_or('e');
+        let popup = dbus::PopupClient::new().context("connecting session bus")?;
+        let t = Instant::now();
+        let handled = popup.trigger(letter);
+        println!("test-trigger('{}') -> handled={} ({}ms)", letter, handled,
+                 t.elapsed().as_millis());
+        return Ok(());
+    }
+
     let accentable = table::load_accentable(ACCENTS_PATH)
         .context("loading accents.json")?;
     let popup = dbus::PopupClient::new().context("connecting session bus")?;
