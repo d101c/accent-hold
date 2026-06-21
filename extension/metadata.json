@@ -1,7 +1,6 @@
 {
   "uuid": "accent-hold@local",
   "name": "Accent Hold",
-  "description": "Raccourci global -> tapez une lettre -> popup de variantes accentuées (é è ê ç ô …), insérées dans n'importe quel champ texte ou terminal. Aucune dépendance, aucun privilège.",
-  "shell-version": ["50"],
-  "settings-schema": "org.gnome.shell.extensions.accent-hold"
+  "description": "Appui long sur une lettre accentuable (e, a, c, o, u…) -> popup de variantes (é è ê ç ô …), insérée dans n'importe quel champ texte ou terminal. Nécessite le daemon accent-holdd.",
+  "shell-version": ["50"]
 }
