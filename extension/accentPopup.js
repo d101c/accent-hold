@@ -111,16 +111,42 @@ export class AccentPopup {
         });
     }
 
+    // notify_keyval(unicode) NE MARCHE PAS : mutter ne trouve pas de keycode
+    // pour un keysym absent du layout ("No keycode found for keyval").
+    // On colle donc le caractère via le presse-papier + Shift+Inser, dont les
+    // keysyms (Shift, Inser) existent vraiment. Shift+Inser colle la sélection
+    // primaire dans les terminaux (VTE) et le presse-papier dans GTK -> on
+    // renseigne les DEUX. L'ancien presse-papier est restauré ensuite.
     _inject(ch) {
         try {
-            if (!this._vdev) return;
-            const keyval = 0x01000000 | ch.codePointAt(0);
-            const t = Clutter.get_current_event_time();
-            this._vdev.notify_keyval(t, keyval, Clutter.KeyState.PRESSED);
-            this._vdev.notify_keyval(t, keyval, Clutter.KeyState.RELEASED);
+            const cb = St.Clipboard.get_default();
+            cb.get_text(St.ClipboardType.CLIPBOARD, (_c, saved) => {
+                cb.set_text(St.ClipboardType.CLIPBOARD, ch);
+                cb.set_text(St.ClipboardType.PRIMARY, ch);
+                this._pasteAndRestore(saved);
+            });
         } catch (e) {
             logError(e, 'accent-hold: inject');
         }
+    }
+
+    _pasteAndRestore(saved) {
+        if (!this._vdev) return;
+        const t = Clutter.get_current_event_time();
+        this._vdev.notify_keyval(t, Clutter.KEY_Shift_L, Clutter.KeyState.PRESSED);
+        this._vdev.notify_keyval(t, Clutter.KEY_Insert, Clutter.KeyState.PRESSED);
+        this._vdev.notify_keyval(t, Clutter.KEY_Insert, Clutter.KeyState.RELEASED);
+        this._vdev.notify_keyval(t, Clutter.KEY_Shift_L, Clutter.KeyState.RELEASED);
+        // restaure l'ancien presse-papier une fois la colle effectuée
+        GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
+            try {
+                St.Clipboard.get_default()
+                    .set_text(St.ClipboardType.CLIPBOARD, saved || '');
+            } catch (e) {
+                logError(e, 'accent-hold: restore clipboard');
+            }
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     _close() {
