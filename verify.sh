@@ -11,7 +11,7 @@ sleep 1
 
 echo "==> 2. État réel dans le Shell"
 INFO=$(gdbus call "${SHELL_DEST[@]}" --method org.gnome.Shell.Extensions.GetExtensionInfo "$U" 2>&1)
-STATE=$(echo "$INFO" | grep -o "'state': <[0-9.]*>" | grep -o "[0-9]")
+STATE=$(echo "$INFO" | grep -oP "'state': <\K[0-9]+")
 ERR=$(echo "$INFO" | grep -o "'error': <'[^']*'>")
 case "$STATE" in
   1) echo "   ✅ ACTIVE — l'extension a chargé SANS erreur (le bug de freeze ne s'est pas reproduit au chargement)";;
