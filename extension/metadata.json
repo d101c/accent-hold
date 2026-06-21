@@ -4,5 +4,6 @@
   "description": "Type accented and special characters the macOS way — without a daemon or root. Press a configurable shortcut, type a base letter (e, a, c, o, n …), then pick the accented variant you want (é è ê ë, ç, ñ, ô …) from a clean popup. The chosen character is injected wherever your cursor is, including text fields, editors and the terminal. A built-in preferences panel lets you customize the shortcut, the popup delay, the character table and the keyboard layouts the extension is active on.",
   "shell-version": ["50"],
   "settings-schema": "org.gnome.shell.extensions.accent-hold",
-  "gettext-domain": "accent-hold"
+  "gettext-domain": "accent-hold",
+  "url": "https://github.com/d101c/accent-hold"
 }
