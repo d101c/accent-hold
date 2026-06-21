@@ -13,3 +13,8 @@
 .accent-chip:selected {
     background-color: #3584e4;
 }
+.accent-hint {
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #ddd;
+}

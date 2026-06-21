@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.accent-hold"
+          path="/org/gnome/shell/extensions/accent-hold/">
+    <key name="trigger" type="as">
+      <default><![CDATA[['<Super>e']]]></default>
+      <summary>Raccourci d'ouverture du sélecteur d'accents</summary>
+      <description>Raccourci global qui ouvre la popup d'accents. Tapez ensuite une lettre de base (e, a, c, …) pour voir ses variantes accentuées.</description>
+    </key>
+  </schema>
+</schemalist>
