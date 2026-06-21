@@ -1,52 +1,105 @@
-import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
+import Meta from 'gi://Meta';
+import Shell from 'gi://Shell';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
-import {AccentPopup} from './accentPopup.js';
+import {AccentPicker} from './accentPicker.js';
 
-// Service D-Bus appelé par le daemon accent-holdd quand un appui long est
-// détecté sur une lettre accentuable.
-const IFACE = `
-<node>
-  <interface name="dev.accenthold.Popup">
-    <method name="Trigger">
-      <arg type="s" direction="in" name="letter"/>
-      <arg type="b" direction="out" name="handled"/>
-    </method>
-  </interface>
-</node>`;
-
+// Extension « Accent Hold » : un raccourci clavier (réglage `trigger`, p.ex.
+// <Super>e) ouvre un sélecteur d'accents façon macOS. On tape la lettre de
+// base, puis on choisit la variante accentuée, insérée dans le champ courant.
 export default class AccentHoldExtension extends Extension {
     enable() {
+        this._settings = this.getSettings();
         this._table = this._loadTable();
-        this._popup = new AccentPopup(this._table);
-        this._dbus = Gio.DBusExportedObject.wrapJSObject(IFACE, this);
-        this._dbus.export(Gio.DBus.session, '/dev/accenthold/Popup');
-        this._nameId = Gio.bus_own_name_on_connection(
-            Gio.DBus.session, 'dev.accenthold.Popup',
-            Gio.BusNameOwnerFlags.NONE, null, null);
+        this._changedIds = [];
+        this._bound = false;
+
+        this._picker = new AccentPicker(
+            () => this._settings,
+            () => this._table,
+        );
+
+        this._bind();
+
+        // Re-bind / recharge la table quand les réglages pertinents changent.
+        const rebind = () => {
+            this._unbind();
+            this._bind();
+        };
+        // Recharger la table n'a aucun lien avec le raccourci : on ne touche
+        // PAS au keybinding (sinon on le retire/réajoute pour rien).
+        const reloadTable = () => {
+            this._table = this._loadTable();
+        };
+        this._changedIds.push(
+            this._settings.connect('changed::enabled', rebind));
+        this._changedIds.push(
+            this._settings.connect('changed::trigger', rebind));
+        this._changedIds.push(
+            this._settings.connect('changed::accents', reloadTable));
     }
 
     disable() {
-        if (this._nameId) { Gio.bus_unown_name(this._nameId); this._nameId = 0; }
-        if (this._dbus) { this._dbus.unexport(); this._dbus = null; }
-        if (this._popup) { this._popup.destroy(); this._popup = null; }
+        this._unbind();
+
+        if (this._changedIds && this._settings) {
+            for (const id of this._changedIds)
+                this._settings.disconnect(id);
+        }
+        this._changedIds = [];
+
+        if (this._picker) {
+            this._picker.destroy();
+            this._picker = null;
+        }
+        this._settings = null;
         this._table = null;
     }
 
-    // Méthode D-Bus : montre la popup des variantes de `letter`.
-    Trigger(letter) {
-        try {
-            return this._popup.show(letter);
-        } catch (e) {
-            logError(e, 'accent-hold: Trigger');
-            return false;
-        }
+    _bind() {
+        if (this._bound)
+            return;
+        if (!this._settings.get_boolean('enabled'))
+            return;
+        Main.wm.addKeybinding(
+            'trigger',
+            this._settings,
+            Meta.KeyBindingFlags.NONE,
+            // NORMAL (+ OVERVIEW) : pas sur l'écran de verrouillage (sécurité,
+            // exigence EGO). Suffit pour saisir des accents dans une app.
+            Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW,
+            () => this._picker.start(),
+        );
+        this._bound = true;
     }
 
+    _unbind() {
+        if (!this._bound)
+            return;
+        Main.wm.removeKeybinding('trigger');
+        this._bound = false;
+    }
+
+    // Charge la table d'accents : JSON du réglage `accents` s'il est non vide,
+    // sinon le fichier accents.json embarqué dans l'extension.
     _loadTable() {
-        const path = this.path + '/accents.json';
-        const [ok, bytes] = GLib.file_get_contents(path);
-        if (!ok) return {};
-        return JSON.parse(new TextDecoder().decode(bytes));
+        try {
+            const override = this._settings.get_string('accents');
+            if (override && override.trim() !== '')
+                return JSON.parse(override);
+        } catch (e) {
+            logError(e, 'accent-hold: parse accents setting');
+        }
+        try {
+            const path = this.path + '/accents.json';
+            const [ok, bytes] = GLib.file_get_contents(path);
+            if (!ok)
+                return {};
+            return JSON.parse(new TextDecoder().decode(bytes));
+        } catch (e) {
+            logError(e, 'accent-hold: load accents.json');
+            return {};
+        }
     }
 }

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gnome.shell.extensions.accent-hold"
+          path="/org/gnome/shell/extensions/accent-hold/">
+    <key name="trigger" type="as">
+      <default>['&lt;Super&gt;e']</default>
+      <summary>Raccourci d'ouverture</summary>
+      <description>La combinaison de touches qui ouvre le sélecteur d'accents.</description>
+    </key>
+    <key name="enabled" type="b">
+      <default>true</default>
+      <summary>Activer</summary>
+      <description>Active ou inhibe le raccourci.</description>
+    </key>
+    <key name="delay-ms" type="i">
+      <default>0</default>
+      <range min="0" max="1000"/>
+      <summary>Latence avant affichage</summary>
+      <description>Latence en millisecondes avant l'affichage de la popup.</description>
+    </key>
+    <key name="popup-timeout-ms" type="i">
+      <default>6000</default>
+      <range min="1000" max="30000"/>
+      <summary>Auto-fermeture failsafe</summary>
+      <description>Délai en millisecondes après lequel la popup se ferme automatiquement.</description>
+    </key>
+    <key name="accents" type="s">
+      <default>''</default>
+      <summary>Table d'accents (JSON)</summary>
+      <description>JSON optionnel surchargeant la table intégrée. Vide = table intégrée extension/accents.json.</description>
+    </key>
+    <key name="layouts" type="as">
+      <default>[]</default>
+      <summary>Claviers activés</summary>
+      <description>Identifiants xkb des layouts où activer le raccourci. Vide = tous les layouts.</description>
+    </key>
+  </schema>
+</schemalist>
