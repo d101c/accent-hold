@@ -9,6 +9,8 @@
 > Pure GNOME Shell extension — no daemon, no privileges, no dependencies, one-click
 > install from extensions.gnome.org.
 
+![Accent Hold in action](docs/screenshot.png)
+
 ---
 
 Popup de variantes accentuées (é è ê ç ô ñ …) pour GNOME, insérées dans
