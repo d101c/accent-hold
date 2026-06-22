@@ -1,26 +1,19 @@
 import Clutter from 'gi://Clutter';
 import GLib from 'gi://GLib';
+import Shell from 'gi://Shell';
 import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as KeyboardStatus from 'resource:///org/gnome/shell/ui/status/keyboard.js';
 
-// Sélecteur d'accents « press-and-hold » à la macOS, déclenché par un raccourci
-// clavier (réglage `trigger`, p.ex. <Super>e).
-//
-// Conçu pour NE JAMAIS geler le clavier :
-//   - try/catch dans le handler -> sur toute exception, on libère le grab
-//   - failsafe : auto-fermeture après popup-timeout-ms quoi qu'il arrive
-//   - on ferme le grab AVANT d'injecter
-//   - on ne touche JAMAIS à Clutter.GrabState / Grab.get_seat_state
-//     (inexistants en GNOME 50, mutter-18)
+// Accent picker opened by a keyboard shortcut. Two phases: first wait for a base
+// letter, then show its accented variants for selection. A failsafe timeout and
+// try/catch around the key handler guarantee the modal grab is always released.
 export class AccentPicker {
-    // getSettings/getTable sont des callbacks (=> Gio.Settings / table objet),
-    // pour toujours lire la valeur courante au moment du déclenchement.
+    // getSettings/getTable are callbacks so the current values are read each time
+    // the picker is triggered.
     constructor(getSettings, getTable, gettext) {
         this._getSettings = getSettings;
         this._getTable = getTable;
-        // Fonction de traduction fournie par extension.js (gettext lié au
-        // domaine `accent-hold`). Repli identité si absente.
         this._ = gettext || ((s) => s);
 
         this._actor = null;
@@ -30,18 +23,16 @@ export class AccentPicker {
         this._variants = [];
         this._index = 0;
         this._chips = [];
-        this._timeoutId = 0;       // failsafe popup-timeout-ms
-        this._delayId = 0;         // latence delay-ms avant ouverture
-        this._injectId = 0;        // idle d'injection différée
-        this._restoreId = 0;       // timeout de restauration du presse-papier
+        this._timeoutId = 0;       // failsafe auto-close
+        this._delayId = 0;         // optional delay before opening
+        this._injectId = 0;        // deferred injection
+        this._restoreId = 0;       // clipboard restore
 
         const seat = Clutter.get_default_backend().get_default_seat();
         this._vdev = seat.create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE);
     }
 
-    // Point d'entrée appelé par le raccourci clavier.
     start() {
-        // Jamais deux popups, ni un double déclenchement pendant la latence.
         if (this._actor || this._delayId)
             return;
 
@@ -64,7 +55,7 @@ export class AccentPicker {
         });
     }
 
-    // Restreint l'activation aux layouts xkb listés dans `layouts` (vide = tous).
+    // Restrict activation to the xkb layouts listed in `layouts` (empty = all).
     _layoutAllowed() {
         let wanted = [];
         try { wanted = this._getSettings().get_strv('layouts'); } catch (_e) {}
@@ -74,9 +65,9 @@ export class AccentPicker {
             const mgr = KeyboardStatus.getInputSourceManager();
             const cur = mgr ? mgr.currentSource : null;
             if (!cur)
-                return true; // impossible de déterminer -> on n'inhibe pas
-            // prefs.js stocke l'id brut de input-sources ; le runtime peut voir
-            // xkbId -> on compare aux DEUX pour rester cohérent.
+                return true;
+            // Match both ids: prefs stores the input-source id, the runtime may
+            // expose xkbId.
             return wanted.includes(cur.xkbId) || wanted.includes(cur.id);
         } catch (_e) {
             return true;
@@ -100,7 +91,7 @@ export class AccentPicker {
         });
         this._hint = new St.Label({
             style_class: 'accent-hint',
-            text: this._('Type a letter…'), // invite : taper la lettre de base
+            text: this._('Type a letter…'),
         });
         this._actor.add_child(this._hint);
 
@@ -108,18 +99,14 @@ export class AccentPicker {
         const [x, y] = global.get_pointer();
         this._actor.set_position(x, y + 24);
 
-        // GNOME 50 (mutter-18) : on ne teste PAS l'état du grab
-        // (Clutter.GrabState / Grab.get_seat_state n'existent pas et lèveraient
-        // une exception laissant le grab pris -> clavier figé). Le failsafe
-        // couvre tout échec.
-        this._grab = Main.pushModal(this._actor, {actionMode: 1 /* NORMAL */});
+        this._grab = Main.pushModal(this._actor, {actionMode: Shell.ActionMode.NORMAL});
         if (!this._grab) {
             this._close();
             return;
         }
 
-        // FAILSAFE anti-freeze armé IMMÉDIATEMENT après le grab : même si
-        // grab_key_focus()/connect levaient, la popup se fermera (jamais figé).
+        // Arm the failsafe right after grabbing so the popup always closes even
+        // if a later call throws.
         let timeout = 6000;
         try { timeout = this._getSettings().get_int('popup-timeout-ms'); } catch (_e) {}
         if (timeout < 1000) timeout = 1000;
@@ -150,20 +137,18 @@ export class AccentPicker {
             return this._onVariants(event, sym);
         } catch (e) {
             logError(e, 'accent-hold: key handler');
-            this._close(); // sur exception : on libère TOUJOURS le grab
+            this._close();
             return Clutter.EVENT_STOP;
         }
     }
 
-    // Phase 1 : on attend la lettre de base.
+    // Phase 1: wait for the base letter.
     _onAwaitLetter(event, sym) {
-        // Ignore les modificateurs seuls (Shift, Ctrl, Alt, Super…).
         if (this._isModifier(sym))
             return Clutter.EVENT_STOP;
 
-        // En GJS, get_key_unicode() renvoie un gunichar marshallé en CHAÎNE d'un
-        // caractère (déjà la lettre, casse incluse), pas un codepoint numérique.
-        // On reste robuste si une version renvoyait un nombre.
+        // In GJS get_key_unicode() returns the character as a one-char string
+        // (case included). Handle a numeric codepoint defensively.
         let ch = event.get_key_unicode();
         if (typeof ch === 'number')
             ch = ch > 0 ? String.fromCodePoint(ch) : '';
@@ -191,10 +176,10 @@ export class AccentPicker {
         );
     }
 
-    // Phase 2 : on affiche les variantes accentuées sous forme de boutons.
+    // Phase 2: show the accented variants as buttons.
     _showVariants(_letter, variants) {
         this._phase = 'variants';
-        this._variants = variants.slice(0, 9); // 1..9 maximum
+        this._variants = variants.slice(0, 9); // 1..9 selectable by number
         this._index = 0;
 
         if (this._hint) {
@@ -230,24 +215,21 @@ export class AccentPicker {
             this._choose(this._index);
             return Clutter.EVENT_STOP;
         }
-        // Sélection par numéro, INDÉPENDANTE de la disposition clavier.
         const n = this._digitIndex(event, sym);
         if (n >= 0) {
             if (n < this._variants.length)
                 this._choose(n);
             return Clutter.EVENT_STOP;
         }
-        // Toute autre touche annule proprement (jamais coincé).
+        // Any other key cancels.
         this._close();
         return Clutter.EVENT_STOP;
     }
 
-    // Renvoie l'index 0..8 si la touche désigne le chiffre 1..9, quel que soit
-    // le layout, sinon -1. On se base D'ABORD sur le KEYCODE matériel : la rangée
-    // de chiffres est à la même position physique en AZERTY/QWERTY/QWERTZ
-    // (keycodes X11 10..18). En AZERTY, la touche « 1 » produit « & » (keysym
-    // différent) mais garde le keycode 10 -> la sélection marche sans Shift.
-    // On accepte aussi les keysyms chiffres (QWERTY / Shift+chiffre) et le pavé.
+    // Map a number key to an index 0..8, or -1. Match the hardware keycode first
+    // (digit row = keycodes 10..18 on any layout) so number selection works on
+    // AZERTY, where the unshifted top row produces symbols. Also accept the digit
+    // keysyms and the numeric keypad.
     _digitIndex(event, sym) {
         let code = 0;
         try { code = event.get_key_code(); } catch (_e) {}
@@ -277,11 +259,11 @@ export class AccentPicker {
 
     _choose(i) {
         const ch = this._variants[i];
-        this._close();          // libère le grab AVANT d'injecter
+        this._close();          // release the grab before injecting
         if (!ch)
             return;
-        // Diffère d'un cycle : laisse popModal rendre le focus clavier à l'app
-        // cible avant d'injecter (sinon le caractère pourrait se perdre).
+        // Defer one cycle so popModal restores keyboard focus to the target app
+        // before the character is inserted.
         this._injectId = GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             this._injectId = 0;
             this._inject(ch);
@@ -289,12 +271,10 @@ export class AccentPicker {
         });
     }
 
-    // notify_keyval(0x01000000|codepoint) NE MARCHE PAS : mutter ne trouve pas
-    // de keycode pour un keysym absent du layout ("No keycode found for keyval").
-    // On colle donc le caractère via le presse-papier + Shift+Inser, dont les
-    // keysyms (Shift_L, Insert) existent réellement. Shift+Inser colle la
-    // sélection PRIMARY dans les terminaux (VTE) et le presse-papier CLIPBOARD
-    // dans GTK -> on renseigne les DEUX. L'ancien presse-papier est restauré.
+    // Insert the character by placing it on the clipboard and synthesizing
+    // Shift+Insert. A virtual key event for an off-layout Unicode character has no
+    // keycode and is rejected by mutter, so the clipboard route is used instead;
+    // it also reaches VTE terminals. The previous clipboard contents are restored.
     _inject(ch) {
         try {
             const cb = St.Clipboard.get_default();
@@ -316,7 +296,7 @@ export class AccentPicker {
         this._vdev.notify_keyval(t, Clutter.KEY_Insert, Clutter.KeyState.PRESSED);
         this._vdev.notify_keyval(t, Clutter.KEY_Insert, Clutter.KeyState.RELEASED);
         this._vdev.notify_keyval(t, Clutter.KEY_Shift_L, Clutter.KeyState.RELEASED);
-        // restaure l'ancien presse-papier une fois la colle effectuée
+        // Restore the previous clipboard once the paste has been delivered.
         this._restoreId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
             this._restoreId = 0;
             try {
@@ -356,7 +336,6 @@ export class AccentPicker {
 
     destroy() {
         this._close();
-        // annule une injection/restauration en vol (si disable() pendant la fenêtre)
         if (this._injectId) {
             GLib.source_remove(this._injectId);
             this._injectId = 0;

@@ -2,14 +2,14 @@ import Adw from 'gi://Adw';
 import Gtk from 'gi://Gtk';
 import Gdk from 'gi://Gdk';
 import Gio from 'gi://Gio';
-import GObject from 'gi://GObject';
 import GLib from 'gi://GLib';
 
 import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
+import {DEFAULT_ACCENTS} from './defaultAccents.js';
 
-// Libellés lisibles pour quelques layouts xkb courants ; sinon on affiche l'id
-// brut. Fonction (et non const) pour que _() s'exécute À L'USAGE, après que le
-// domaine gettext soit résolu — pas au moment de l'import du module.
+// Readable labels for a few common xkb layouts; unknown ids fall back to the raw
+// id. A function (not a const) so _() runs on use, after the gettext domain is
+// resolved, rather than at module import time.
 function layoutLabels() {
     return {
         'fr': _('French (fr)'),
@@ -43,7 +43,6 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         this._buildLayoutsGroup(page, settings);
     }
 
-    // ---------------------------------------------------------------- Raccourci
     _buildShortcutGroup(page, settings) {
         const group = new Adw.PreferencesGroup({
             title: _('Shortcut'),
@@ -51,7 +50,6 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         });
         page.add(group);
 
-        // enabled : SwitchRow lié directement.
         const enabledRow = new Adw.SwitchRow({
             title: _('Enabled'),
             subtitle: _('Enable or disable the shortcut.'),
@@ -60,7 +58,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         settings.bind('enabled', enabledRow, 'active',
             Gio.SettingsBindFlags.DEFAULT);
 
-        // trigger : ActionRow + bouton de capture (Gtk.EventControllerKey).
+        // Capture button: click, then press the combination.
         const triggerRow = new Adw.ActionRow({
             title: _('Combination'),
             subtitle: _('Click the button, then press the combination.'),
@@ -103,7 +101,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
             if (!capturing)
                 return Gdk.EVENT_PROPAGATE;
 
-            // Échap : annuler. Backspace/Delete : effacer.
+            // Escape cancels; Backspace/Delete clears.
             if (keyval === Gdk.KEY_Escape) {
                 stopCapture();
                 return Gdk.EVENT_STOP;
@@ -114,7 +112,6 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
                 return Gdk.EVENT_STOP;
             }
 
-            // Ignorer les modificateurs seuls.
             if (this._isModifierKey(keyval))
                 return Gdk.EVENT_STOP;
 
@@ -134,7 +131,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         triggerRow.activatable_widget = button;
         group.add(triggerRow);
 
-        // Repli : EntryRow éditable pour saisir l'accélérateur à la main.
+        // Text fallback: type the accelerator by hand.
         const entryRow = new Adw.EntryRow({
             title: _('Accelerator (text)'),
         });
@@ -153,18 +150,16 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
             if (ok && Gtk.accelerator_valid(keyval, mods)) {
                 settings.set_strv('trigger', [Gtk.accelerator_name(keyval, mods)]);
             } else {
-                // Saisie libre : on l'enregistre telle quelle (l'utilisateur sait).
                 settings.set_strv('trigger', [txt]);
             }
         });
         group.add(entryRow);
 
-        // Garder les widgets synchronisés avec la clé.
         const changedId = settings.connect('changed::trigger', () => {
             refreshButton();
             syncEntry();
         });
-        window_destroy_cleanup(group, settings, changedId);
+        disconnectOnDestroy(group, settings, changedId);
     }
 
     _isModifierKey(keyval) {
@@ -189,7 +184,6 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         }
     }
 
-    // ------------------------------------------------------------- Comportement
     _buildBehaviorGroup(page, settings) {
         const group = new Adw.PreferencesGroup({
             title: _('Behavior'),
@@ -225,7 +219,6 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
             Gio.SettingsBindFlags.DEFAULT);
     }
 
-    // ------------------------------------------------- Caractères accentuables
     _buildAccentsGroup(page, settings) {
         const group = new Adw.PreferencesGroup({
             title: _('Accentable characters'),
@@ -233,7 +226,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         });
         page.add(group);
 
-        const defaultJson = this._readDefaultAccents();
+        const defaultJson = JSON.stringify(DEFAULT_ACCENTS, null, 2);
 
         const buffer = new Gtk.TextBuffer();
         const loadFromSettings = () => {
@@ -262,7 +255,6 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         scrolled.set_child(textView);
         group.add(scrolled);
 
-        // Ligne d'état + boutons.
         const statusRow = new Adw.ActionRow({
             title: 'JSON',
             subtitle: _('Modified = saved automatically.'),
@@ -305,7 +297,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
 
         saveButton.connect('clicked', save);
 
-        // Sauvegarde automatique différée à la frappe.
+        // Debounced auto-save while typing.
         let saveTimer = 0;
         buffer.connect('changed', () => {
             if (saveTimer)
@@ -328,21 +320,6 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         group.add(statusRow);
     }
 
-    _readDefaultAccents() {
-        try {
-            const file = this.dir.get_child('accents.json');
-            const [ok, bytes] = file.load_contents(null);
-            if (ok) {
-                const decoder = new TextDecoder('utf-8');
-                return decoder.decode(bytes);
-            }
-        } catch (e) {
-            // ignore
-        }
-        return '{}';
-    }
-
-    // ------------------------------------------------------------------ Claviers
     _buildLayoutsGroup(page, settings) {
         const group = new Adw.PreferencesGroup({
             title: _('Keyboards'),
@@ -355,7 +332,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
             const inputSettings = new Gio.Settings({
                 schema_id: 'org.gnome.desktop.input-sources',
             });
-            // 'sources' est un a(ss) : (type, id) ; ex ('xkb','fr+oss').
+            // 'sources' is an a(ss) of (type, id), e.g. ('xkb', 'fr+oss').
             const variant = inputSettings.get_value('sources');
             const n = variant.n_children();
             for (let i = 0; i < n; i++) {
@@ -369,7 +346,6 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
             sources = [];
         }
 
-        // Dédoublonner.
         sources = [...new Set(sources)];
 
         if (sources.length === 0) {
@@ -390,14 +366,14 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
                 title: label,
                 subtitle: id,
             });
-            // Coché si présent dans layouts, OU si layouts est vide (tous activés).
+            // Checked when listed in `layouts`, or when `layouts` is empty (all on).
             const current = enabledLayouts();
             row.active = current.length === 0 || current.includes(id);
 
             row.connect('notify::active', () => {
                 let list = enabledLayouts();
                 const allIds = sources;
-                // Si la liste était vide (= tous), on la matérialise d'abord.
+                // Materialize the implicit "all" list before editing it.
                 if (list.length === 0)
                     list = [...allIds];
 
@@ -408,7 +384,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
                     set.delete(id);
 
                 let next = allIds.filter(x => set.has(x));
-                // Si tous sont cochés, revenir à liste vide (= tous, sémantique défaut).
+                // All checked => empty list (the "all" default).
                 if (next.length === allIds.length)
                     next = [];
                 settings.set_strv('layouts', next);
@@ -419,9 +395,8 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
     }
 }
 
-// Déconnecte un handler de settings quand le widget racine est détruit,
-// pour éviter de garder une référence morte.
-function window_destroy_cleanup(widget, settings, handlerId) {
+// Disconnect a settings handler when the widget is destroyed.
+function disconnectOnDestroy(widget, settings, handlerId) {
     widget.connect('destroy', () => {
         if (handlerId) {
             settings.disconnect(handlerId);
