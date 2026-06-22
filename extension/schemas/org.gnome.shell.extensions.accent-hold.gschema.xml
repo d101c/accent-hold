@@ -4,40 +4,40 @@
           path="/org/gnome/shell/extensions/accent-hold/">
     <key name="trigger" type="as">
       <default>['&lt;Super&gt;e']</default>
-      <summary>Raccourci d'ouverture</summary>
-      <description>La combinaison de touches qui ouvre le sélecteur d'accents.</description>
+      <summary>Trigger shortcut</summary>
+      <description>The key combination that opens the accent picker.</description>
     </key>
     <key name="enabled" type="b">
       <default>true</default>
-      <summary>Activer</summary>
-      <description>Active ou inhibe le raccourci.</description>
+      <summary>Enabled</summary>
+      <description>Enable or disable the shortcut.</description>
     </key>
     <key name="delay-ms" type="i">
       <default>0</default>
       <range min="0" max="1000"/>
-      <summary>Latence avant affichage</summary>
-      <description>Latence en millisecondes avant l'affichage de la popup.</description>
+      <summary>Delay before display</summary>
+      <description>Delay in milliseconds before the popup appears.</description>
     </key>
     <key name="popup-timeout-ms" type="i">
       <default>6000</default>
       <range min="1000" max="30000"/>
-      <summary>Auto-fermeture failsafe</summary>
-      <description>Délai en millisecondes après lequel la popup se ferme automatiquement.</description>
+      <summary>Auto-close failsafe</summary>
+      <description>Delay in milliseconds after which the popup closes automatically.</description>
     </key>
     <key name="accents" type="s">
       <default>''</default>
-      <summary>Table d'accents (JSON)</summary>
-      <description>JSON optionnel surchargeant la table intégrée. Vide = table intégrée extension/accents.json.</description>
+      <summary>Accent table (JSON)</summary>
+      <description>Optional JSON overriding the built-in table. Empty = built-in table.</description>
     </key>
     <key name="show-indicator" type="b">
       <default>true</default>
-      <summary>Indicateur dans la barre du haut</summary>
-      <description>Affiche une icône et un menu dans la barre supérieure de GNOME Shell.</description>
+      <summary>Top-bar indicator</summary>
+      <description>Show an icon and menu in the GNOME Shell top bar.</description>
     </key>
     <key name="layouts" type="as">
       <default>[]</default>
-      <summary>Claviers activés</summary>
-      <description>Identifiants xkb des layouts où activer le raccourci. Vide = tous les layouts.</description>
+      <summary>Active keyboards</summary>
+      <description>xkb layout ids where the shortcut is active. Empty = all layouts.</description>
     </key>
   </schema>
 </schemalist>

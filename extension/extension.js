@@ -1,14 +1,14 @@
-import GLib from 'gi://GLib';
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 import {AccentPicker} from './accentPicker.js';
 import {addIndicator} from './panelIndicator.js';
+import {DEFAULT_ACCENTS} from './defaultAccents.js';
 
-// Extension « Accent Hold » : un raccourci clavier (réglage `trigger`, p.ex.
-// <Super>e) ouvre un sélecteur d'accents façon macOS. On tape la lettre de
-// base, puis on choisit la variante accentuée, insérée dans le champ courant.
+// A keyboard shortcut (the `trigger` setting, e.g. <Super>e) opens a macOS-style
+// accent picker: type the base letter, then choose the accented variant, which
+// is inserted into the focused text field.
 export default class AccentHoldExtension extends Extension {
     enable() {
         this._settings = this.getSettings();
@@ -28,20 +28,16 @@ export default class AccentHoldExtension extends Extension {
         if (this._settings.get_boolean('show-indicator'))
             this._addIndicator();
 
-        // Re-bind / recharge la table quand les réglages pertinents changent.
         const rebind = () => {
             this._unbind();
             this._bind();
         };
-        // Création / destruction de l'indicateur de barre à la volée.
         const toggleIndicator = () => {
             if (this._settings.get_boolean('show-indicator'))
                 this._addIndicator();
             else
                 this._removeIndicator();
         };
-        // Recharger la table n'a aucun lien avec le raccourci : on ne touche
-        // PAS au keybinding (sinon on le retire/réajoute pour rien).
         const reloadTable = () => {
             this._table = this._loadTable();
         };
@@ -102,8 +98,7 @@ export default class AccentHoldExtension extends Extension {
             'trigger',
             this._settings,
             Meta.KeyBindingFlags.NONE,
-            // NORMAL (+ OVERVIEW) : pas sur l'écran de verrouillage (sécurité,
-            // exigence EGO). Suffit pour saisir des accents dans une app.
+            // Not active on the lock screen.
             Shell.ActionMode.NORMAL | Shell.ActionMode.OVERVIEW,
             () => this._picker.start(),
         );
@@ -117,8 +112,7 @@ export default class AccentHoldExtension extends Extension {
         this._bound = false;
     }
 
-    // Charge la table d'accents : JSON du réglage `accents` s'il est non vide,
-    // sinon le fichier accents.json embarqué dans l'extension.
+    // Use the user's `accents` override when set, otherwise the built-in table.
     _loadTable() {
         try {
             const override = this._settings.get_string('accents');
@@ -127,15 +121,6 @@ export default class AccentHoldExtension extends Extension {
         } catch (e) {
             logError(e, 'accent-hold: parse accents setting');
         }
-        try {
-            const path = this.path + '/accents.json';
-            const [ok, bytes] = GLib.file_get_contents(path);
-            if (!ok)
-                return {};
-            return JSON.parse(new TextDecoder().decode(bytes));
-        } catch (e) {
-            logError(e, 'accent-hold: load accents.json');
-            return {};
-        }
+        return DEFAULT_ACCENTS;
     }
 }
