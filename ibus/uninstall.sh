@@ -5,12 +5,17 @@ set -euo pipefail
 DEST="${XDG_DATA_HOME:-$HOME/.local/share}/accent-hold"
 COMPONENT="${XDG_DATA_HOME:-$HOME/.local/share}/ibus/component/accent-hold.xml"
 
-# Drop our input sources from GNOME's list.
+# Give the plain layouts back: accent-hold:<layout> becomes <layout> again.
 python3 - <<'EOF'
 from gi.repository import Gio, GLib
 s = Gio.Settings.new('org.gnome.desktop.input-sources')
 sources = s.get_value('sources').unpack()
-kept = [src for src in sources if not (src[0] == 'ibus' and src[1].startswith('accent-hold:'))]
+kept = []
+for kind, ident in sources:
+    if kind == 'ibus' and ident.startswith('accent-hold:'):
+        kind, ident = 'xkb', ident[len('accent-hold:'):]
+    if (kind, ident) not in kept:
+        kept.append((kind, ident))
 if kept != sources:
     s.set_value('sources', GLib.Variant('a(ss)', kept))
     Gio.Settings.sync()

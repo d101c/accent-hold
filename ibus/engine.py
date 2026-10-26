@@ -462,7 +462,7 @@ def component_xml(exec_path):
       <author>Julien Griffit</author>
       <layout>{escape(layout)}</layout>
       <layout_variant>{escape(variant)}</layout_variant>
-      <symbol>{escape(short)}·é</symbol>
+      <symbol>{escape(short)}</symbol>
       <rank>0</rank>
     </engine>''')
     return f'''<?xml version="1.0" encoding="utf-8"?>

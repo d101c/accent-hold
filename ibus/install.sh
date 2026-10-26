@@ -4,6 +4,8 @@
 #   ./install.sh               install / update, restart IBus
 #   ./install.sh --add-source  also add "<layout> (Accent Hold)" to GNOME's
 #                              input sources, next to the current layout
+#   ./install.sh --replace     replace each layout in GNOME's input sources by
+#                              its Accent Hold version (same layout + accents)
 #
 # Re-run after adding a keyboard layout: one engine is generated per layout.
 set -euo pipefail
@@ -76,18 +78,27 @@ if ! ibus list-engine 2>/dev/null | grep -q 'accent-hold:'; then
     echo "WARNING: IBus does not list the engine yet. Log out and back in, then re-run." >&2
 fi
 
-if [[ "${1:-}" == "--add-source" ]]; then
-    python3 - <<'EOF'
+if [[ "${1:-}" == "--add-source" || "${1:-}" == "--replace" ]]; then
+    ACCENT_HOLD_MODE="$1" python3 - <<'EOF'
+import os
 from gi.repository import Gio, GLib
 s = Gio.Settings.new('org.gnome.desktop.input-sources')
 sources = s.get_value('sources').unpack()
-xkb = [i for k, i in sources if k == 'xkb']
-if xkb:
-    engine = ('ibus', 'accent-hold:' + xkb[0])
-    if engine not in sources:
-        sources.insert(1, engine)
-        s.set_value('sources', GLib.Variant('a(ss)', sources))
-        print('Added input source', engine[1])
+if os.environ['ACCENT_HOLD_MODE'] == '--replace':
+    new = []
+    for kind, ident in sources:
+        src = ('ibus', 'accent-hold:' + ident) if kind == 'xkb' else (kind, ident)
+        if src not in new:
+            new.append(src)
+else:
+    new = list(sources)
+    xkb = [i for k, i in sources if k == 'xkb']
+    if xkb and ('ibus', 'accent-hold:' + xkb[0]) not in new:
+        new.insert(1, ('ibus', 'accent-hold:' + xkb[0]))
+if new != sources:
+    s.set_value('sources', GLib.Variant('a(ss)', new))
+    Gio.Settings.sync()
+    print('Input sources:', ', '.join(i for _k, i in new))
 EOF
 fi
 

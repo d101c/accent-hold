@@ -72,8 +72,10 @@ mouse. `Esc` keeps the plain letter.
 ```
 
 No `sudo`. One input source is generated per keyboard layout you use
-(“French (Accent Hold)”, “English (Accent Hold)”, …); switch to it with
-`Super+Space`. It reads the same accent table as the extension's preferences.
+(“French (Accent Hold)”, “English (Accent Hold)”, …): same layout, plus
+accents. `--add-source` adds it next to your layout (switch with
+`Super+Space`); `--replace` swaps your layouts for their Accent Hold version,
+so accents work everywhere with nothing to pick. It reads the same accent table as the extension's preferences.
 Remove it with `./ibus/uninstall.sh`.
 
 How it works: while the engine has focus it switches the desktop key repeat

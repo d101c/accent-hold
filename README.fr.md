@@ -72,8 +72,10 @@ affiche les variantes **à côté du curseur de texte**. Choisissez avec `1`–`
 ```
 
 Sans `sudo`. Une source de saisie est générée par disposition clavier utilisée
-(« Français (Accent Hold) », « Anglais (Accent Hold) »…) ; on bascule avec
-`Super+Espace`. Le moteur lit la même table d'accents que les préférences de
+(« Français (Accent Hold) », « Anglais (Accent Hold) »…) : même disposition,
+accents en plus. `--add-source` l'ajoute à côté de la vôtre (bascule avec
+`Super+Espace`) ; `--replace` remplace vos dispositions par leur version
+Accent Hold, pour avoir les accents partout sans rien choisir. Le moteur lit la même table d'accents que les préférences de
 l'extension. Désinstallation : `./ibus/uninstall.sh`.
 
 Fonctionnement : tant que le moteur a le focus, il coupe la répétition des
