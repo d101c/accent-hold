@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Icône symbolique « Accent Hold » : un « é » stylisé (lettre e + accent aigu).
-     Tracé monochrome, recolorable via la classe St « system-status-icon ». -->
+<!-- Accent Hold symbolic icon: a stylised "é". Filled shapes only, because
+     symbolic icons are recoloured through their fill, not their stroke. -->
 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-  <g fill="none" stroke="#2e3436" stroke-width="1.7"
-     stroke-linecap="round" stroke-linejoin="round">
-    <!-- Accent aigu -->
-    <path d="M 7.4 5.2 L 9.7 3.1"/>
-    <!-- Barre transversale du « e » -->
-    <path d="M 4.5 10 H 11.5"/>
-    <!-- Corps du « e », ouvert en bas à droite (la bouche) -->
-    <path d="M 11.5 10 A 3.5 3.5 0 1 0 10.1 12.8"/>
+  <g fill="#2e3436">
+    <path d="M 7.973 5.828 L 10.273 3.728 A 0.850 0.850 0 0 0 9.127 2.472 L 6.827 4.572 A 0.850 0.850 0 0 0 7.973 5.828 Z"/>
+    <path d="M 4.5 9.150 H 12.350 V 10.850 H 4.5 A 0.850 0.850 0 0 1 4.5 9.150 Z"/>
+    <path d="M 12.350 10.000 A 4.350 4.350 0 1 0 10.610 13.480 A 0.850 0.850 0 0 0 9.590 12.120 A 2.650 2.650 0 1 1 10.650 10.000 Z"/>
   </g>
 </svg>
