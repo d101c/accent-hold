@@ -59,16 +59,37 @@ Everything is stored in GSettings
 gsettings set org.gnome.shell.extensions.accent-hold trigger "['<Super>grave']"
 ```
 
-## Why a shortcut and not “hold the letter”?
+## True press-and-hold mode (IBus engine)
 
-On Wayland, intercepting the **hold of a normal letter** inside another
-application requires privileged keyboard access (evdev) → daemon + `sudo` +
-`input` group + `udev`: impossible to distribute simply. A global shortcut is
-captured natively by the Shell, with no privileges — hence a one-click extension.
+Prefer the macOS gesture? The [`ibus/`](ibus/) engine gives you **real
+press-and-hold**: tap a letter and it types normally; hold it and the
+candidates appear **next to the text cursor**. Pick one with `1`–`9` (by key
+position, so it works on AZERTY, QWERTZ, …), the arrows + `Enter`, or the
+mouse. `Esc` keeps the plain letter.
 
-The “true hold-the-letter” variant (Rust evdev + uinput daemon) lives in
-[`legacy/`](legacy/): closer to macOS, but a heavy install (`sudo`, `usermod`,
-`udev`, logout). Not recommended for distribution.
+```bash
+./ibus/install.sh --add-source
+```
+
+No `sudo`. One input source is generated per keyboard layout you use
+(“French (Accent Hold)”, “English (Accent Hold)”, …): same layout, plus
+accents. `--add-source` adds it next to your layout (switch with
+`Super+Space`); `--replace` swaps your layouts for their Accent Hold version,
+so accents work everywhere with nothing to pick. It reads the same accent table as the extension's preferences.
+Remove it with `./ibus/uninstall.sh`.
+
+How it works: while the engine has focus it switches the desktop key repeat
+off and repeats ordinary keys itself, so a held letter types exactly one
+character and opens the picker instead of `eeee`. Key repeat is given back
+when you leave the engine, even after a crash. Applications that bypass IBus
+do not get key repeat while this input source is active.
+
+## Why does the extension use a shortcut?
+
+A GNOME Shell extension cannot see a letter being held inside another
+application on Wayland, so the extension uses a global shortcut captured by the
+Shell: one-click install, nothing else. For the hold gesture, use the IBus
+engine above. The old evdev daemon variant is archived in [`legacy/`](legacy/).
 
 ## Zero-install alternative: the Compose key
 
@@ -77,6 +98,14 @@ Without installing anything, GNOME can already type accents everywhere:
 gsettings set org.gnome.desktop.input-sources xkb-options "['compose:caps']"
 ```
 Then `Compose`(Caps Lock) `e` `'` → é. No popup, but zero dependencies.
+
+## Credits
+
+The press-and-hold technique used by the IBus engine (key repeat switched off
+while the engine has focus, ordinary keys repeated by the engine, native IBus
+candidate panel) comes from **Manuele Conti**'s
+[gnome-accent-hold](https://github.com/manux81/gnome-accent-hold). Thank you!
+Our engine is an independent implementation.
 
 ## License
 

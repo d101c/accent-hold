@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+# Install the Accent Hold IBus engine for the current user (no sudo).
+#
+#   ./install.sh               install / update, restart IBus
+#   ./install.sh --add-source  also add "<layout> (Accent Hold)" to GNOME's
+#                              input sources, next to the current layout
+#   ./install.sh --replace     replace each layout in GNOME's input sources by
+#                              its Accent Hold version (same layout + accents)
+#
+# Re-run after adding a keyboard layout: one engine is generated per layout.
+set -euo pipefail
+
+HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO="$(dirname "$HERE")"
+DEST="${XDG_DATA_HOME:-$HOME/.local/share}/accent-hold/ibus"
+COMPONENT_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/ibus/component"
+COMPONENT="$COMPONENT_DIR/accent-hold.xml"
+SCHEMA_XML="$REPO/extension/schemas/org.gnome.shell.extensions.accent-hold.gschema.xml"
+
+if [[ $EUID -eq 0 ]]; then
+    echo "Run this as your normal user, not with sudo." >&2
+    exit 1
+fi
+if ! python3 -c 'import gi; gi.require_version("IBus", "1.0")' 2>/dev/null; then
+    echo "Missing IBus Python bindings. On Debian/Ubuntu: sudo apt install python3-gi gir1.2-ibus-1.0" >&2
+    exit 1
+fi
+
+echo "Installing the engine in $DEST"
+mkdir -p "$DEST/schemas" "$COMPONENT_DIR"
+install -m 0755 "$HERE/engine.py" "$DEST/engine.py"
+install -m 0644 "$HERE/holdcore.py" "$REPO/extension/defaultAccents.js" "$DEST/"
+# Own copy of the schema, so the engine also works without the extension.
+install -m 0644 "$SCHEMA_XML" "$DEST/schemas/"
+glib-compile-schemas "$DEST/schemas"
+
+python3 "$DEST/engine.py" --component > "$COMPONENT"
+echo "IBus component: $COMPONENT"
+grep -o '<name>accent-hold:[^<]*' "$COMPONENT" | sed 's/<name>/  engine /'
+
+# ibus-daemon only reads the system component directory unless
+# IBUS_COMPONENT_PATH says otherwise, and it must be set on the daemon
+# itself (not just for one write-cache) or the next cache rebuild drops us.
+IBUS_DATA="$(pkg-config --variable=pkgdatadir ibus-1.0 2>/dev/null || true)"
+SYSTEM_DIR="${IBUS_DATA:-/usr/share/ibus}/component"
+COMPONENT_PATH="$COMPONENT_DIR:$SYSTEM_DIR"
+
+UNIT=""
+for candidate in org.freedesktop.IBus.session.GNOME.service org.freedesktop.IBus.session.generic.service; do
+    if systemctl --user cat "$candidate" >/dev/null 2>&1; then
+        UNIT="$candidate"
+        break
+    fi
+done
+
+if [[ -n "$UNIT" ]]; then
+    DROPIN="$HOME/.config/systemd/user/$UNIT.d/accent-hold.conf"
+    mkdir -p "$(dirname "$DROPIN")"
+    printf '[Service]\nEnvironment=IBUS_COMPONENT_PATH=%s\n' "$COMPONENT_PATH" > "$DROPIN"
+    echo "IBus service drop-in: $DROPIN"
+    systemctl --user daemon-reload
+    IBUS_COMPONENT_PATH="$COMPONENT_PATH" ibus write-cache
+    systemctl --user restart "$UNIT"
+else
+    ENVFILE="$HOME/.config/environment.d/90-accent-hold.conf"
+    mkdir -p "$(dirname "$ENVFILE")"
+    printf 'IBUS_COMPONENT_PATH=%s\n' "$COMPONENT_PATH" > "$ENVFILE"
+    echo "Environment file: $ENVFILE (takes effect after logging out and in)"
+    IBUS_COMPONENT_PATH="$COMPONENT_PATH" ibus write-cache
+    IBUS_COMPONENT_PATH="$COMPONENT_PATH" ibus restart || true
+fi
+
+for _ in $(seq 20); do
+    ibus list-engine 2>/dev/null | grep -q 'accent-hold:' && break
+    sleep 0.5
+done
+if ! ibus list-engine 2>/dev/null | grep -q 'accent-hold:'; then
+    echo "WARNING: IBus does not list the engine yet. Log out and back in, then re-run." >&2
+fi
+
+if [[ "${1:-}" == "--add-source" || "${1:-}" == "--replace" ]]; then
+    ACCENT_HOLD_MODE="$1" python3 - <<'EOF'
+import os
+from gi.repository import Gio, GLib
+s = Gio.Settings.new('org.gnome.desktop.input-sources')
+sources = s.get_value('sources').unpack()
+if os.environ['ACCENT_HOLD_MODE'] == '--replace':
+    new = []
+    for kind, ident in sources:
+        src = ('ibus', 'accent-hold:' + ident) if kind == 'xkb' else (kind, ident)
+        if src not in new:
+            new.append(src)
+else:
+    new = list(sources)
+    xkb = [i for k, i in sources if k == 'xkb']
+    if xkb and ('ibus', 'accent-hold:' + xkb[0]) not in new:
+        new.insert(1, ('ibus', 'accent-hold:' + xkb[0]))
+if new != sources:
+    s.set_value('sources', GLib.Variant('a(ss)', new))
+    Gio.Settings.sync()
+    print('Input sources:', ', '.join(i for _k, i in new))
+EOF
+fi
+
+cat <<EOF
+
+Done. Pick "<your layout> (Accent Hold)" as input source: Settings > Keyboard >
+Input Sources > Add, or Super+Space if it is already in the list.
+Then hold a letter such as e, a or c and choose with 1-9, the arrows or Enter.
+EOF

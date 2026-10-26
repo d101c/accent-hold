@@ -4,3 +4,4 @@ legacy/daemon/target
 extension/schemas/gschemas.compiled
 *.swp
 __pycache__/
+.pytest_cache/
