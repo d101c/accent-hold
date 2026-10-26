@@ -59,17 +59,37 @@ Tout est stocké dans GSettings
 gsettings set org.gnome.shell.extensions.accent-hold trigger "['<Super>grave']"
 ```
 
-## Pourquoi un raccourci et pas « maintenir la lettre » ?
+## Mode « vrai maintien » (moteur IBus)
 
-Sous Wayland, intercepter le **maintien d'une lettre normale** dans une autre
-application impose un accès clavier privilégié (evdev) → daemon + `sudo` +
-groupe `input` + `udev` : impossible à distribuer simplement. Le raccourci
-global est capté nativement par le Shell, sans aucun privilège — d'où une
-extension installable en un clic.
+Vous préférez le geste macOS ? Le moteur [`ibus/`](ibus/) apporte le **vrai
+maintien de la lettre** : une frappe normale tape la lettre ; un appui long
+affiche les variantes **à côté du curseur de texte**. Choisissez avec `1`–`9`
+(par position de touche, donc ça marche en AZERTY, QWERTZ…), les flèches +
+`Entrée`, ou la souris. `Échap` garde la lettre simple.
 
-La variante « vrai maintien de la lettre » (daemon Rust evdev + uinput) existe
-dans [`legacy/`](legacy/) : plus fidèle à macOS, mais install lourde
-(`sudo`, `usermod`, `udev`, logout). Non recommandée pour la distribution.
+```bash
+./ibus/install.sh --add-source
+```
+
+Sans `sudo`. Une source de saisie est générée par disposition clavier utilisée
+(« Français (Accent Hold) », « Anglais (Accent Hold) »…) ; on bascule avec
+`Super+Espace`. Le moteur lit la même table d'accents que les préférences de
+l'extension. Désinstallation : `./ibus/uninstall.sh`.
+
+Fonctionnement : tant que le moteur a le focus, il coupe la répétition des
+touches du bureau et répète lui-même les touches ordinaires ; une lettre
+maintenue tape donc un seul caractère et ouvre le sélecteur au lieu de
+`eeee`. La répétition est rendue dès qu'on quitte le moteur, même après un
+plantage. Les applications qui contournent IBus n'ont pas de répétition des
+touches tant que cette source est active.
+
+## Pourquoi l'extension utilise-t-elle un raccourci ?
+
+Sous Wayland, une extension GNOME Shell ne peut pas voir qu'une lettre est
+maintenue dans une autre application : l'extension utilise donc un raccourci
+global capté par le Shell (installation en un clic, rien d'autre). Pour le geste
+de maintien, utilisez le moteur IBus ci-dessus. L'ancienne variante daemon evdev
+est archivée dans [`legacy/`](legacy/).
 
 ## Alternative zéro-install : la touche Compose
 
@@ -78,6 +98,15 @@ Sans rien installer, GNOME sait déjà taper les accents partout :
 gsettings set org.gnome.desktop.input-sources xkb-options "['compose:caps']"
 ```
 Puis `Compose`(Verr.Maj) `e` `'` → é. Pas de popup, mais zéro dépendance.
+
+## Crédits
+
+La technique de maintien utilisée par le moteur IBus (répétition des touches
+coupée tant que le moteur a le focus, touches ordinaires répétées par le moteur,
+panneau de candidats IBus natif) vient de
+[gnome-accent-hold](https://github.com/manux81/gnome-accent-hold) de
+**Manuele Conti**. Merci ! Notre moteur en est une implémentation
+indépendante.
 
 ## Licence
 
