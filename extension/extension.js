@@ -13,11 +13,10 @@ export default class AccentHoldExtension extends Extension {
     enable() {
         this._settings = this.getSettings();
         this._table = this._loadTable();
-        this._changedIds = [];
         this._bound = false;
 
         this._picker = new AccentPicker(
-            () => this._settings,
+            this._settings,
             () => this._table,
             _,
         );
@@ -41,25 +40,19 @@ export default class AccentHoldExtension extends Extension {
         const reloadTable = () => {
             this._table = this._loadTable();
         };
-        this._changedIds.push(
-            this._settings.connect('changed::enabled', rebind));
-        this._changedIds.push(
-            this._settings.connect('changed::trigger', rebind));
-        this._changedIds.push(
-            this._settings.connect('changed::accents', reloadTable));
-        this._changedIds.push(
-            this._settings.connect('changed::show-indicator', toggleIndicator));
+        this._settings.connectObject(
+            'changed::enabled', rebind,
+            'changed::trigger', rebind,
+            'changed::accents', reloadTable,
+            'changed::show-indicator', toggleIndicator,
+            this);
     }
 
     disable() {
         this._unbind();
         this._removeIndicator();
 
-        if (this._changedIds && this._settings) {
-            for (const id of this._changedIds)
-                this._settings.disconnect(id);
-        }
-        this._changedIds = [];
+        this._settings.disconnectObject(this);
 
         if (this._picker) {
             this._picker.destroy();

@@ -16,7 +16,6 @@ class AccentHoldIndicator extends PanelMenu.Button {
 
         this._settings = settings;
         this._openPreferences = openPreferences;
-        this._settingsChangedId = 0;
 
         this.add_child(new St.Icon({
             gicon: Gio.icon_new_for_string(iconPath),
@@ -25,32 +24,26 @@ class AccentHoldIndicator extends PanelMenu.Button {
 
         this._toggle = new PopupMenu.PopupSwitchMenuItem(
             _('Enabled'), this._settings.get_boolean('enabled'));
-        this._toggle.connect('toggled', (_item, state) => {
+        this._toggle.connectObject('toggled', (_item, state) => {
             if (this._settings.get_boolean('enabled') !== state)
                 this._settings.set_boolean('enabled', state);
-        });
+        }, this);
         this.menu.addMenuItem(this._toggle);
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         const prefsItem = new PopupMenu.PopupMenuItem(_('Preferences'));
-        prefsItem.connect('activate', () => {
-            if (this._openPreferences)
-                this._openPreferences();
-        });
+        prefsItem.connectObject('activate', () => this._openPreferences(), this);
         this.menu.addMenuItem(prefsItem);
 
         // Keep the toggle in sync when `enabled` changes elsewhere.
-        this._settingsChangedId = this._settings.connect('changed::enabled', () => {
+        this._settings.connectObject('changed::enabled', () => {
             this._toggle.setToggleState(this._settings.get_boolean('enabled'));
-        });
+        }, this);
     }
 
     destroy() {
-        if (this._settingsChangedId && this._settings) {
-            this._settings.disconnect(this._settingsChangedId);
-            this._settingsChangedId = 0;
-        }
+        this._settings.disconnectObject(this);
         this._settings = null;
         this._openPreferences = null;
         this._toggle = null;

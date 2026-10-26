@@ -9,10 +9,10 @@ import * as KeyboardStatus from 'resource:///org/gnome/shell/ui/status/keyboard.
 // letter, then show its accented variants for selection. A failsafe timeout and
 // try/catch around the key handler guarantee the modal grab is always released.
 export class AccentPicker {
-    // getSettings/getTable are callbacks so the current values are read each time
-    // the picker is triggered.
-    constructor(getSettings, getTable, gettext) {
-        this._getSettings = getSettings;
+    // getTable is a callback because the extension reloads the table when the
+    // `accents` setting changes.
+    constructor(settings, getTable, gettext) {
+        this._settings = settings;
         this._getTable = getTable;
         this._ = gettext || ((s) => s);
 
@@ -39,11 +39,7 @@ export class AccentPicker {
         if (!this._layoutAllowed())
             return;
 
-        const settings = this._getSettings();
-        let delay = 0;
-        try { delay = settings.get_int('delay-ms'); } catch (_e) {}
-        if (delay < 0) delay = 0;
-
+        const delay = Math.max(0, this._settings.get_int('delay-ms'));
         if (delay === 0) {
             this._open();
             return;
@@ -57,21 +53,15 @@ export class AccentPicker {
 
     // Restrict activation to the xkb layouts listed in `layouts` (empty = all).
     _layoutAllowed() {
-        let wanted = [];
-        try { wanted = this._getSettings().get_strv('layouts'); } catch (_e) {}
-        if (!wanted || wanted.length === 0)
+        const wanted = this._settings.get_strv('layouts');
+        if (wanted.length === 0)
             return true;
-        try {
-            const mgr = KeyboardStatus.getInputSourceManager();
-            const cur = mgr ? mgr.currentSource : null;
-            if (!cur)
-                return true;
-            // Match both ids: prefs stores the input-source id, the runtime may
-            // expose xkbId.
-            return wanted.includes(cur.xkbId) || wanted.includes(cur.id);
-        } catch (_e) {
+        const cur = KeyboardStatus.getInputSourceManager().currentSource;
+        if (!cur)
             return true;
-        }
+        // Match both ids: prefs stores the input-source id, the runtime may
+        // expose xkbId.
+        return wanted.includes(cur.xkbId) || wanted.includes(cur.id);
     }
 
     _open() {
@@ -107,9 +97,8 @@ export class AccentPicker {
 
         // Arm the failsafe right after grabbing so the popup always closes even
         // if a later call throws.
-        let timeout = 6000;
-        try { timeout = this._getSettings().get_int('popup-timeout-ms'); } catch (_e) {}
-        if (timeout < 1000) timeout = 1000;
+        const timeout = Math.max(1000, this._settings.get_int('popup-timeout-ms'));
+        this._removeSource('_timeoutId');
         this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, timeout, () => {
             this._timeoutId = 0;
             this._close();
@@ -118,7 +107,7 @@ export class AccentPicker {
 
         try {
             this._actor.grab_key_focus();
-            this._actor.connect('key-press-event', (_a, e) => this._onKey(e));
+            this._actor.connectObject('key-press-event', (_a, e) => this._onKey(e), this);
         } catch (e) {
             logError(e, 'accent-hold: open');
             this._close();
@@ -194,7 +183,7 @@ export class AccentPicker {
                 label: `${i + 1} ${v}`,
                 can_focus: false,
             });
-            chip.connect('clicked', () => this._choose(i));
+            chip.connectObject('clicked', () => this._choose(i), this);
             this._actor.add_child(chip);
             return chip;
         });
@@ -231,8 +220,7 @@ export class AccentPicker {
     // AZERTY, where the unshifted top row produces symbols. Also accept the digit
     // keysyms and the numeric keypad.
     _digitIndex(event, sym) {
-        let code = 0;
-        try { code = event.get_key_code(); } catch (_e) {}
+        const code = event.get_key_code();
         if (code >= 10 && code <= 18)
             return code - 10;
         if (sym >= Clutter.KEY_1 && sym <= Clutter.KEY_9)
@@ -264,6 +252,7 @@ export class AccentPicker {
             return;
         // Defer one cycle so popModal restores keyboard focus to the target app
         // before the character is inserted.
+        this._removeSource('_injectId');
         this._injectId = GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             this._injectId = 0;
             this._inject(ch);
@@ -276,16 +265,12 @@ export class AccentPicker {
     // keycode and is rejected by mutter, so the clipboard route is used instead;
     // it also reaches VTE terminals. The previous clipboard contents are restored.
     _inject(ch) {
-        try {
-            const cb = St.Clipboard.get_default();
-            cb.get_text(St.ClipboardType.CLIPBOARD, (_c, saved) => {
-                cb.set_text(St.ClipboardType.CLIPBOARD, ch);
-                cb.set_text(St.ClipboardType.PRIMARY, ch);
-                this._pasteAndRestore(saved);
-            });
-        } catch (e) {
-            logError(e, 'accent-hold: inject');
-        }
+        const cb = St.Clipboard.get_default();
+        cb.get_text(St.ClipboardType.CLIPBOARD, (_c, saved) => {
+            cb.set_text(St.ClipboardType.CLIPBOARD, ch);
+            cb.set_text(St.ClipboardType.PRIMARY, ch);
+            this._pasteAndRestore(saved);
+        });
     }
 
     _pasteAndRestore(saved) {
@@ -297,27 +282,25 @@ export class AccentPicker {
         this._vdev.notify_keyval(t, Clutter.KEY_Insert, Clutter.KeyState.RELEASED);
         this._vdev.notify_keyval(t, Clutter.KEY_Shift_L, Clutter.KeyState.RELEASED);
         // Restore the previous clipboard once the paste has been delivered.
+        this._removeSource('_restoreId');
         this._restoreId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
             this._restoreId = 0;
-            try {
-                St.Clipboard.get_default()
-                    .set_text(St.ClipboardType.CLIPBOARD, saved || '');
-            } catch (e) {
-                logError(e, 'accent-hold: restore clipboard');
-            }
+            St.Clipboard.get_default()
+                .set_text(St.ClipboardType.CLIPBOARD, saved || '');
             return GLib.SOURCE_REMOVE;
         });
     }
 
+    _removeSource(field) {
+        if (this[field]) {
+            GLib.source_remove(this[field]);
+            this[field] = 0;
+        }
+    }
+
     _close() {
-        if (this._delayId) {
-            GLib.source_remove(this._delayId);
-            this._delayId = 0;
-        }
-        if (this._timeoutId) {
-            GLib.source_remove(this._timeoutId);
-            this._timeoutId = 0;
-        }
+        this._removeSource('_delayId');
+        this._removeSource('_timeoutId');
         if (this._grab) {
             Main.popModal(this._grab);
             this._grab = null;
@@ -336,14 +319,9 @@ export class AccentPicker {
 
     destroy() {
         this._close();
-        if (this._injectId) {
-            GLib.source_remove(this._injectId);
-            this._injectId = 0;
-        }
-        if (this._restoreId) {
-            GLib.source_remove(this._restoreId);
-            this._restoreId = 0;
-        }
+        this._removeSource('_injectId');
+        this._removeSource('_restoreId');
+        this._settings = null;
         this._vdev = null;
     }
 }

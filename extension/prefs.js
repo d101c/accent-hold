@@ -328,22 +328,18 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         page.add(group);
 
         let sources = [];
-        try {
-            const inputSettings = new Gio.Settings({
-                schema_id: 'org.gnome.desktop.input-sources',
-            });
-            // 'sources' is an a(ss) of (type, id), e.g. ('xkb', 'fr+oss').
-            const variant = inputSettings.get_value('sources');
-            const n = variant.n_children();
-            for (let i = 0; i < n; i++) {
-                const child = variant.get_child_value(i);
-                const type = child.get_child_value(0).get_string()[0];
-                const id = child.get_child_value(1).get_string()[0];
-                if (type === 'xkb')
-                    sources.push(id);
-            }
-        } catch (e) {
-            sources = [];
+        const inputSettings = new Gio.Settings({
+            schema_id: 'org.gnome.desktop.input-sources',
+        });
+        // 'sources' is an a(ss) of (type, id), e.g. ('xkb', 'fr+oss').
+        const variant = inputSettings.get_value('sources');
+        const n = variant.n_children();
+        for (let i = 0; i < n; i++) {
+            const child = variant.get_child_value(i);
+            const type = child.get_child_value(0).get_string()[0];
+            const id = child.get_child_value(1).get_string()[0];
+            if (type === 'xkb')
+                sources.push(id);
         }
 
         sources = [...new Set(sources)];
