@@ -78,11 +78,12 @@ accents. `--add-source` adds it next to your layout (switch with
 so accents work everywhere with nothing to pick. It reads the same accent table as the extension's preferences.
 Remove it with `./ibus/uninstall.sh`.
 
-How it works: while the engine has focus it switches the desktop key repeat
-off and repeats ordinary keys itself, so a held letter types exactly one
-character and opens the picker instead of `eeee`. Key repeat is given back
-when you leave the engine, even after a crash. Applications that bypass IBus
-do not get key repeat while this input source is active.
+How it works: the installer adds a small xkb option (`accenthold:norepeat`,
+files in `~/.config/xkb`) that marks only the accentable letters (a, e, i, o,
+u, c, n, y, s, z on your layouts) as non-repeating, like macOS does. A held
+letter types one character and opens the picker instead of `eeee`; arrows,
+Delete, volume keys and every other key keep the desktop's native repeat,
+everywhere. Re-run the installer after adding a layout.
 
 ## Why does the extension use a shortcut?
 
@@ -101,11 +102,12 @@ Then `Compose`(Caps Lock) `e` `'` → é. No popup, but zero dependencies.
 
 ## Credits
 
-The press-and-hold technique used by the IBus engine (key repeat switched off
-while the engine has focus, ordinary keys repeated by the engine, native IBus
-candidate panel) comes from **Manuele Conti**'s
+The press-and-hold technique used by the IBus engine (the held letter kept
+from repeating, letter replaced after the fact, native IBus candidate panel)
+comes from **Manuele Conti**'s
 [gnome-accent-hold](https://github.com/manux81/gnome-accent-hold). Thank you!
-Our engine is an independent implementation.
+Our engine is an independent implementation; it stops only the accentable
+keys repeating through the keymap instead of switching repeat off globally.
 
 ## License
 

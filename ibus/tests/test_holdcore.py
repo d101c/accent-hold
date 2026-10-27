@@ -4,7 +4,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from holdcore import (  # noqa: E402
-    ARMED, IDLE, OPEN, HoldMachine, Key, load_table, parse_default_accents,
+    ARMED, IDLE, OPEN, HoldMachine, Key, Result, load_table, parse_default_accents,
 )
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
@@ -95,7 +95,7 @@ def test_other_key_closes_and_types_normally():
     r = m.key(press(X, KC_X, 'x'))
     assert not r.consumed
     assert r.actions[0] == ('hide',)
-    assert ('repeat_start', press(X, KC_X, 'x')) in r.actions
+    assert r.actions == [('hide',)]
     assert m.state == IDLE
 
 
@@ -133,22 +133,20 @@ def test_shift_held_gives_uppercase_candidates():
     assert r.actions[-1] == ('replace', 'E', 'È')
 
 
-def test_shortcuts_never_arm_and_repeat():
+def test_shortcuts_never_arm():
     m = HoldMachine(TABLE)
-    k = press(E, KC_E, 'e', shortcut=True)
-    r = m.key(k)
-    assert not r.consumed and r.actions == [('repeat_start', k)]
+    r = m.key(press(E, KC_E, 'e', shortcut=True))
+    assert not r.consumed and r.actions == []
     assert m.state == IDLE
 
 
-def test_non_accentable_keys_repeat_engine_side():
+def test_non_accentable_keys_pass_through():
     m = HoldMachine(TABLE)
-    k = press(BKSP, KC_BKSP, name='BackSpace')
-    assert m.key(k).actions == [('repeat_start', k)]
-    assert m.key(release(BKSP, KC_BKSP)).actions == [('repeat_stop',)]
+    assert m.key(press(BKSP, KC_BKSP, name='BackSpace')) == Result(False, [])
+    assert m.key(release(BKSP, KC_BKSP)) == Result(False, [])
 
 
-def test_modifiers_do_not_repeat_or_disarm():
+def test_modifiers_do_not_disarm():
     m = HoldMachine(TABLE)
     assert m.key(press(SHIFT, KC_SHIFT, modifier=True)).actions == []
     m.key(press(E, KC_E, 'e'))

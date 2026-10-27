@@ -2,7 +2,7 @@
 
 The engine feeds key events in and gets back whether the event is consumed
 plus a list of actions to perform (show the candidates, replace the letter,
-start engine-side key repeat, ...). The IBus layer only executes actions.
+...). The IBus layer only executes actions.
 
 Model: a tapped letter is always forwarded to the application right away,
 so ordinary typing is never delayed. Holding an accentable letter for
@@ -66,8 +66,6 @@ class HoldMachine:
     ('move', index)                  move the highlight
     ('hide',)                        hide the candidate list
     ('replace', base, text)          replace the inserted `base` with `text`
-    ('repeat_start', key)            repeat `key` engine-side while held
-    ('repeat_stop',)                 stop engine-side repeat
     """
 
     def __init__(self, table):
@@ -107,21 +105,17 @@ class HoldMachine:
         elif self.state == ARMED:
             actions.append(('disarm',))
         self._to_idle()
-        return actions + [('repeat_stop',)]
+        return actions
 
     # -- states --------------------------------------------------------------
 
     def _key_idle(self, key):
-        if key.release:
-            return Result(False, [('repeat_stop',)])
-        if not key.shortcut and key.char in self.table:
+        if not key.release and not key.shortcut and key.char in self.table:
             self.state = ARMED
             self.base = key.char
             self.held = key.keyval
-            return Result(False, [('repeat_stop',), ('arm',)])
-        if key.modifier:
-            return Result(False)
-        return Result(False, [('repeat_start', key)])
+            return Result(False, [('arm',)])
+        return Result(False)
 
     def _key_armed(self, key):
         if key.keyval == self.held:
@@ -129,8 +123,8 @@ class HoldMachine:
                 # Quick tap: the letter is already in the application.
                 self._to_idle()
                 return Result(False, [('disarm',)])
-            # A repeat of the held letter (should not happen with the
-            # compositor repeat off): never let it type a second letter.
+            # A repeat of the held letter (accentable keys are marked as
+            # non-repeating in the keymap): never let it type a second letter.
             return Result(True)
         if key.release or key.modifier:
             return Result(False)
