@@ -85,6 +85,10 @@ letter types one character and opens the picker instead of `eeee`; arrows,
 Delete, volume keys and every other key keep the desktop's native repeat,
 everywhere. Re-run the installer after adding a layout.
 
+The preferences (accent table, delay) open from GNOME's input source menu
+(“fr” in the top bar) › *Accent Hold Preferences…*, so with the engine you can
+hide the extension's own icon.
+
 ## Why does the extension use a shortcut?
 
 A GNOME Shell extension cannot see a letter being held inside another

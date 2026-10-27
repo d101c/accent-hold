@@ -86,6 +86,10 @@ caractère et ouvre le sélecteur au lieu de `eeee` ; les flèches, Suppr, les
 touches de volume et toutes les autres gardent la répétition native du
 bureau, partout. Relancez l'installeur après avoir ajouté une disposition.
 
+Les préférences (table d'accents, délai) s'ouvrent depuis le menu des sources
+de saisie de GNOME (« fr » dans la barre du haut) › *Préférences Accent
+Hold…* : avec le moteur, l'icône propre de l'extension peut être masquée.
+
 ## Pourquoi l'extension utilise-t-elle un raccourci ?
 
 Sous Wayland, une extension GNOME Shell ne peut pas voir qu'une lettre est
