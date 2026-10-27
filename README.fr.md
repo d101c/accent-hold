@@ -78,12 +78,13 @@ accents en plus. `--add-source` l'ajoute à côté de la vôtre (bascule avec
 Accent Hold, pour avoir les accents partout sans rien choisir. Le moteur lit la même table d'accents que les préférences de
 l'extension. Désinstallation : `./ibus/uninstall.sh`.
 
-Fonctionnement : tant que le moteur a le focus, il coupe la répétition des
-touches du bureau et répète lui-même les touches ordinaires ; une lettre
-maintenue tape donc un seul caractère et ouvre le sélecteur au lieu de
-`eeee`. La répétition est rendue dès qu'on quitte le moteur, même après un
-plantage. Les applications qui contournent IBus n'ont pas de répétition des
-touches tant que cette source est active.
+Fonctionnement : l'installeur ajoute une petite option xkb
+(`accenthold:norepeat`, fichiers dans `~/.config/xkb`) qui marque seulement
+les lettres accentuables (a, e, i, o, u, c, n, y, s, z de vos dispositions)
+comme « sans répétition », comme sur macOS. Une lettre maintenue tape un seul
+caractère et ouvre le sélecteur au lieu de `eeee` ; les flèches, Suppr, les
+touches de volume et toutes les autres gardent la répétition native du
+bureau, partout. Relancez l'installeur après avoir ajouté une disposition.
 
 ## Pourquoi l'extension utilise-t-elle un raccourci ?
 
@@ -103,12 +104,13 @@ Puis `Compose`(Verr.Maj) `e` `'` → é. Pas de popup, mais zéro dépendance.
 
 ## Crédits
 
-La technique de maintien utilisée par le moteur IBus (répétition des touches
-coupée tant que le moteur a le focus, touches ordinaires répétées par le moteur,
-panneau de candidats IBus natif) vient de
+La technique de maintien utilisée par le moteur IBus (lettre maintenue
+empêchée de se répéter, lettre remplacée après coup, panneau de candidats IBus
+natif) vient de
 [gnome-accent-hold](https://github.com/manux81/gnome-accent-hold) de
 **Manuele Conti**. Merci ! Notre moteur en est une implémentation
-indépendante.
+indépendante ; il n'empêche la répétition que des touches accentuables, via le
+keymap, au lieu de la couper pour tout le bureau.
 
 ## Licence
 

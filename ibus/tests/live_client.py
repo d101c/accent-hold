@@ -86,13 +86,13 @@ def main():
     ok &= check('escape commits nothing', not any(e[0] == 'commit' for e in events))
     key(ctx, IBus.KEY_e, KC_E, RELEASE)
 
-    # Ordinary key held: the engine repeats it.
+    # Ordinary key: passed straight to the application, no engine-side repeat
+    # (the keymap's own repeat handles it).
     events.clear()
-    key(ctx, IBus.KEY_x, KC_X)
+    ok &= check('ordinary key forwarded', not key(ctx, IBus.KEY_x, KC_X))
     wait(900)
     key(ctx, IBus.KEY_x, KC_X, RELEASE)
-    repeats = [e for e in events if e[:2] == ('forward', 'x')]
-    ok &= check(f'engine-side repeat ({len(repeats)} repeats)', len(repeats) >= 3)
+    ok &= check('no engine-side repeat', not any(e[0] == 'forward' for e in events))
 
     if not ok:
         for e in events:
