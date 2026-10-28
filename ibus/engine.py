@@ -20,6 +20,7 @@ Usage:
 
 import json
 import os
+import shutil
 import signal
 import sys
 from xml.sax.saxutils import escape
@@ -115,6 +116,42 @@ class AccentTable:
         self.table = self._load()
 
 
+# -- preferences entry -------------------------------------------------------
+
+PREFS_PROP = 'accent-hold-preferences'
+
+
+def preferences_label():
+    # The session's interface language, in gettext's lookup order.
+    lang = next((os.environ[v] for v in ('LANGUAGE', 'LC_ALL', 'LC_MESSAGES', 'LANG')
+                 if os.environ.get(v)), '')
+    if lang.startswith('fr'):
+        return 'Préférences Accent Hold…'
+    return 'Accent Hold Preferences…'
+
+
+def preferences_props():
+    """The input source menu entry, when the extension (which owns the
+    preferences window) is installed."""
+    if not shutil.which('gnome-extensions') or not extension_settings():
+        return None
+    props = IBus.PropList()
+    props.append(IBus.Property(
+        key=PREFS_PROP, prop_type=IBus.PropType.NORMAL,
+        label=IBus.Text.new_from_string(preferences_label()),
+        icon='preferences-system-symbolic', sensitive=True, visible=True,
+        state=IBus.PropState.UNCHECKED, sub_props=None))
+    return props
+
+
+def open_preferences():
+    try:
+        GLib.spawn_async(['gnome-extensions', 'prefs', EXT_UUID],
+                         flags=GLib.SpawnFlags.SEARCH_PATH)
+    except GLib.Error as e:
+        log(f'cannot open the preferences: {e.message}')
+
+
 # -- engine ------------------------------------------------------------------
 
 class AccentHoldEngine(IBus.Engine):
@@ -129,6 +166,7 @@ class AccentHoldEngine(IBus.Engine):
         self._hold_id = 0
         self._commit_id = 0
         self._lookup = None
+        self._props = preferences_props()
 
     # -- IBus vfuncs ---------------------------------------------------------
 
@@ -139,6 +177,15 @@ class AccentHoldEngine(IBus.Engine):
         result = self._machine.key(key)
         self._run(result.actions)
         return result.consumed
+
+    def do_focus_in(self):
+        # Entries shown in GNOME's input source menu (the "fr" indicator).
+        if self._props:
+            self.register_properties(self._props)
+
+    def do_property_activate(self, name, _state):
+        if name == PREFS_PROP:
+            open_preferences()
 
     def do_focus_out(self):
         self._run(self._machine.cancel())

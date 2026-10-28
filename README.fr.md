@@ -25,7 +25,7 @@ Shift est détecté : `E` propose `É È Ê Ë …`.
 ## Installer
 
 ### Pour un utilisateur (le plus simple)
-Sur **extensions.gnome.org**, clique **« Install »**. Fin. Pas de terminal,
+Sur [**extensions.gnome.org**](https://extensions.gnome.org/extension/10265/accent-hold/) (GNOME 45 à 50), clique **« Install »**. Fin. Pas de terminal,
 pas de sudo, pas de daemon — c'est une extension Shell pure.
 
 ### Construire le paquet à uploader
@@ -67,9 +67,16 @@ affiche les variantes **à côté du curseur de texte**. Choisissez avec `1`–`
 (par position de touche, donc ça marche en AZERTY, QWERTZ…), les flèches +
 `Entrée`, ou la souris. `Échap` garde la lettre simple.
 
+Installation depuis la dernière release (tout bureau GNOME 45+ avec IBus,
+le cas par défaut sur Ubuntu, Fedora, Debian…) :
 ```bash
-./ibus/install.sh --add-source
+curl -L https://github.com/d101c/accent-hold/archive/refs/tags/v2.0.tar.gz | tar xz
+accent-hold-2.0/ibus/install.sh --replace
 ```
+Depuis un clone : `./ibus/install.sh --replace` (ou `--add-source`). Il faut
+les bindings Python d'IBus, déjà présents sur la plupart des bureaux GNOME
+(sinon `sudo apt install python3-gi gir1.2-ibus-1.0`, ou `sudo dnf install
+python3-gobject ibus`).
 
 Sans `sudo`. Une source de saisie est générée par disposition clavier utilisée
 (« Français (Accent Hold) », « Anglais (Accent Hold) »…) : même disposition,
@@ -85,6 +92,10 @@ comme « sans répétition », comme sur macOS. Une lettre maintenue tape un seu
 caractère et ouvre le sélecteur au lieu de `eeee` ; les flèches, Suppr, les
 touches de volume et toutes les autres gardent la répétition native du
 bureau, partout. Relancez l'installeur après avoir ajouté une disposition.
+
+Les préférences (table d'accents, délai) s'ouvrent depuis le menu des sources
+de saisie de GNOME (« fr » dans la barre du haut) › *Préférences Accent
+Hold…* : avec le moteur, l'icône propre de l'extension peut être masquée.
 
 ## Pourquoi l'extension utilise-t-elle un raccourci ?
 

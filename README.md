@@ -25,7 +25,7 @@ Shift is detected: `E` offers `É È Ê Ë …`.
 ## Install
 
 ### For a user (the simplest way)
-On **extensions.gnome.org**, click **“Install”**. Done. No terminal, no sudo,
+On [**extensions.gnome.org**](https://extensions.gnome.org/extension/10265/accent-hold/) (GNOME 45 to 50), click **“Install”**. Done. No terminal, no sudo,
 no daemon — it is a pure Shell extension.
 
 ### Build the package to upload
@@ -67,9 +67,16 @@ candidates appear **next to the text cursor**. Pick one with `1`–`9` (by key
 position, so it works on AZERTY, QWERTZ, …), the arrows + `Enter`, or the
 mouse. `Esc` keeps the plain letter.
 
+Install it from the latest release (any GNOME 45+ desktop with IBus, the
+default on Ubuntu, Fedora, Debian…):
 ```bash
-./ibus/install.sh --add-source
+curl -L https://github.com/d101c/accent-hold/archive/refs/tags/v2.0.tar.gz | tar xz
+accent-hold-2.0/ibus/install.sh --replace
 ```
+From a clone, run `./ibus/install.sh --replace` (or `--add-source`). It needs
+the IBus Python bindings, already there on most GNOME desktops (otherwise
+`sudo apt install python3-gi gir1.2-ibus-1.0`, or `sudo dnf install
+python3-gobject ibus`).
 
 No `sudo`. One input source is generated per keyboard layout you use
 (“French (Accent Hold)”, “English (Accent Hold)”, …): same layout, plus
@@ -84,6 +91,10 @@ u, c, n, y, s, z on your layouts) as non-repeating, like macOS does. A held
 letter types one character and opens the picker instead of `eeee`; arrows,
 Delete, volume keys and every other key keep the desktop's native repeat,
 everywhere. Re-run the installer after adding a layout.
+
+The preferences (accent table, delay) open from GNOME's input source menu
+(“fr” in the top bar) › *Accent Hold Preferences…*, so with the engine you can
+hide the extension's own icon.
 
 ## Why does the extension use a shortcut?
 
