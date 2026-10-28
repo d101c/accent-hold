@@ -77,7 +77,6 @@ export class AccentPicker {
             style_class: 'accent-popup',
             reactive: true,
             can_focus: true,
-            vertical: false,
         });
         this._hint = new St.Label({
             style_class: 'accent-hint',
