@@ -118,6 +118,17 @@ gsettings set org.gnome.desktop.input-sources xkb-options "['compose:caps']"
 ```
 Puis `Compose`(Verr.Maj) `e` `'` → é. Pas de popup, mais zéro dépendance.
 
+## Comment il a été fait
+
+Accent Hold a été développé avec une aide importante d'un assistant de code
+IA (Claude, d'Anthropic), qui a écrit l'essentiel du code. L'auteur a choisi
+les fonctions et l'approche, relu les modifications, testé chaque version à la
+main sous GNOME 50 (AZERTY et QWERTY), et maintient le projet. La logique
+d'appui long est couverte par des tests automatiques
+(`gjs -m extension/tests/holdMachine.test.js`, `pytest ibus/tests`), et
+l'extension a aussi été testée dans un GNOME Shell sans écran avec des
+frappes simulées. Les rapports de bug sont lus et traités par un humain.
+
 ## Crédits
 
 La technique d'appui long (lettre maintenue empêchée de se répéter, lettre

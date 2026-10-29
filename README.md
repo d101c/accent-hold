@@ -114,6 +114,16 @@ gsettings set org.gnome.desktop.input-sources xkb-options "['compose:caps']"
 ```
 Then `Compose`(Caps Lock) `e` `'` → é. No popup, but zero dependencies.
 
+## How it was made
+
+Accent Hold was developed with substantial help from an AI coding assistant
+(Claude, by Anthropic), which wrote most of the code. The author chose the
+features and the approach, reviewed the changes, tested every version by hand
+on GNOME 50 (AZERTY and QWERTY), and maintains the project. The press-and-hold
+logic is covered by automated tests (`gjs -m extension/tests/holdMachine.test.js`,
+`pytest ibus/tests`), and the extension was also tested in a headless GNOME
+Shell with injected key presses. Bug reports are read and answered by a human.
+
 ## Credits
 
 The press-and-hold technique (the held letter kept from repeating, letter
