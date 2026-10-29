@@ -2,25 +2,32 @@
 
 *Lire dans une autre langue : [English](README.md)*
 
-> **Tapez les caractères accentués à la façon macOS — sans daemon ni privilèges.**
-> Appuyez sur un raccourci configurable, tapez une lettre de base (`e`, `a`, `c`,
-> `o`, `n` …), puis choisissez la variante accentuée voulue (`é è ê ë`, `ç`, `ñ`,
-> `ô` …) dans une popup nette. Le caractère est inséré là où se trouve le curseur —
-> champs texte, éditeurs et terminal compris. Un panneau de préférences intégré
-> permet de régler le raccourci, le délai, la table de caractères et les claviers
-> actifs. Extension GNOME Shell pure — aucun daemon, aucun privilège, aucune
+> **Tapez les caractères accentués à la façon macOS : maintenez la lettre.**
+> Maintenez `e`, `a`, `c`, `o`, `n` … et ses variantes (`é è ê ë`, `ç`, `ñ`,
+> `ô` …) apparaissent à côté du curseur de texte ; une frappe normale tape la
+> lettre. Un raccourci (`Super+E`) fait la même chose partout ailleurs.
+> Extension GNOME Shell pure : aucun daemon, aucun privilège, aucune
 > dépendance, installable en un clic depuis extensions.gnome.org.
 
 ![Accent Hold en action](docs/demo.gif)
 
 ## Utilisation
 
-1. `Super+E` (raccourci configurable)
-2. tape une lettre de base : `e`, `a`, `c`, `o`, `u`, `n`, `s`, `i`, `y`, `z`
-3. choisis la variante : `1`–`9`, ou `←`/`→` + `Entrée`, ou clic. `Échap` annule.
+**Appui long** (champs texte, éditeurs, terminal…) :
 
-Le caractère est inséré dans le champ qui avait le focus (terminal compris).
-Shift est détecté : `E` propose `É È Ê Ë …`.
+1. maintiens une lettre : `e`, `a`, `c`, `o`, `u`, `n`, `s`, `i`, `y`, `z`
+2. choisis la variante : `1`–`9` (par position de touche, donc ça marche en
+   AZERTY, QWERTZ…), ou `←`/`→` + `Entrée`, ou clic. `Échap` garde la lettre
+   simple.
+
+La lettre maintenue ne se répète pas. `E` (avec Maj) propose `É È Ê Ë …`.
+
+**Raccourci**, pour les applications qui n'utilisent pas la méthode de saisie
+de GNOME :
+
+1. `Super+E` (configurable)
+2. tape une lettre de base
+3. choisis la variante de la même façon.
 
 ## Installer
 
@@ -47,6 +54,7 @@ gnome-extensions enable accent-hold@griffit.gmail.com
 Panneau de configuration intégré (icône réglages dans l'app *Extensions*, ou
 `gnome-extensions prefs accent-hold@griffit.gmail.com`) :
 
+- **Appui long** : activer ou non, et durée d'appui (400 ms par défaut).
 - **Raccourci** : la touche qui ouvre le sélecteur (défaut `Super+E`).
 - **Activer / inhiber** : coupe le raccourci sans désinstaller l'extension.
 - **Délai (ms)** : latence avant l'affichage de la popup (0–1000).
@@ -59,16 +67,13 @@ Tout est stocké dans GSettings
 gsettings set org.gnome.shell.extensions.accent-hold trigger "['<Super>grave']"
 ```
 
-## Mode « vrai maintien » (moteur IBus)
+## Moteur IBus optionnel (applications X11)
 
-Vous préférez le geste macOS ? Le moteur [`ibus/`](ibus/) apporte le **vrai
-maintien de la lettre** : une frappe normale tape la lettre ; un appui long
-affiche les variantes **à côté du curseur de texte**. Choisissez avec `1`–`9`
-(par position de touche, donc ça marche en AZERTY, QWERTZ…), les flèches +
-`Entrée`, ou la souris. `Échap` garde la lettre simple.
+L'appui long marche dans toutes les applications qui utilisent la méthode de
+saisie de GNOME (GTK, la plupart des applis Qt, terminaux). Pour les
+anciennes applications X11, le moteur [`ibus/`](ibus/) offre le même geste via
+IBus. La plupart des gens n'en ont pas besoin.
 
-Installation depuis la dernière release (tout bureau GNOME 45+ avec IBus,
-le cas par défaut sur Ubuntu, Fedora, Debian…) :
 ```bash
 curl -L https://github.com/d101c/accent-hold/archive/refs/tags/v2.0.tar.gz | tar xz
 accent-hold-2.0/ibus/install.sh --replace
@@ -79,11 +84,9 @@ les bindings Python d'IBus, déjà présents sur la plupart des bureaux GNOME
 python3-gobject ibus`).
 
 Sans `sudo`. Une source de saisie est générée par disposition clavier utilisée
-(« Français (Accent Hold) », « Anglais (Accent Hold) »…) : même disposition,
-accents en plus. `--add-source` l'ajoute à côté de la vôtre (bascule avec
-`Super+Espace`) ; `--replace` remplace vos dispositions par leur version
-Accent Hold, pour avoir les accents partout sans rien choisir. Le moteur lit la même table d'accents que les préférences de
-l'extension. Désinstallation : `./ibus/uninstall.sh`.
+(« Français (Accent Hold) », « Anglais (Accent Hold) »…). Quand l'une d'elles
+est sélectionnée, l'extension laisse les touches au moteur. Désinstallation :
+`./ibus/uninstall.sh`.
 
 Fonctionnement : l'installeur ajoute une petite option xkb
 (`accenthold:norepeat`, fichiers dans `~/.config/xkb`) qui marque seulement
@@ -97,13 +100,15 @@ Les préférences (table d'accents, délai) s'ouvrent depuis le menu des sources
 de saisie de GNOME (« fr » dans la barre du haut) › *Préférences Accent
 Hold…* : avec le moteur, l'icône propre de l'extension peut être masquée.
 
-## Pourquoi l'extension utilise-t-elle un raccourci ?
+## Fonctionnement de l'appui long
 
-Sous Wayland, une extension GNOME Shell ne peut pas voir qu'une lettre est
-maintenue dans une autre application : l'extension utilise donc un raccourci
-global capté par le Shell (installation en un clic, rien d'autre). Pour le geste
-de maintien, utilisez le moteur IBus ci-dessus. L'ancienne variante daemon evdev
-est archivée dans [`legacy/`](legacy/).
+Sous Wayland, la méthode de saisie de GNOME Shell voit chaque touche tapée
+dans un champ texte avant de la passer à IBus. L'extension observe ces
+touches : une lettre tapée passe telle quelle ; une lettre accentuable
+maintenue ouvre les variantes, ses répétitions sont ignorées, et la variante
+choisie remplace la lettre déjà tapée. Seuls les chiffres, les flèches,
+`Entrée` et `Échap` sont retenus pendant l'affichage des variantes.
+L'ancienne variante daemon evdev est archivée dans [`legacy/`](legacy/).
 
 ## Alternative zéro-install : la touche Compose
 
@@ -115,13 +120,11 @@ Puis `Compose`(Verr.Maj) `e` `'` → é. Pas de popup, mais zéro dépendance.
 
 ## Crédits
 
-La technique de maintien utilisée par le moteur IBus (lettre maintenue
-empêchée de se répéter, lettre remplacée après coup, panneau de candidats IBus
-natif) vient de
+La technique d'appui long (lettre maintenue empêchée de se répéter, lettre
+remplacée après coup) vient de
 [gnome-accent-hold](https://github.com/manux81/gnome-accent-hold) de
-**Manuele Conti**. Merci ! Notre moteur en est une implémentation
-indépendante ; il n'empêche la répétition que des touches accentuables, via le
-keymap, au lieu de la couper pour tout le bureau.
+**Manuele Conti**. Merci ! L'extension et le moteur IBus en sont des
+implémentations indépendantes.
 
 ## Licence
 

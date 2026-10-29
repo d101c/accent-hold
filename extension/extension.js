@@ -3,12 +3,12 @@ import Shell from 'gi://Shell';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
 import {AccentPicker} from './accentPicker.js';
+import {PressHold} from './pressHold.js';
 import {addIndicator} from './panelIndicator.js';
 import {DEFAULT_ACCENTS} from './defaultAccents.js';
 
-// A keyboard shortcut (the `trigger` setting, e.g. <Super>e) opens a macOS-style
-// accent picker: type the base letter, then choose the accented variant, which
-// is inserted into the focused text field.
+// Hold an accentable letter to choose its accented variant (pressHold.js), or
+// press the `trigger` shortcut (e.g. <Super>e) then type the base letter.
 export default class AccentHoldExtension extends Extension {
     enable() {
         this._settings = this.getSettings();
@@ -22,6 +22,8 @@ export default class AccentHoldExtension extends Extension {
         );
 
         this._bind();
+
+        this._pressHold = new PressHold(this._settings, () => this._table);
 
         this._indicator = null;
         if (this._settings.get_boolean('show-indicator'))
@@ -51,6 +53,9 @@ export default class AccentHoldExtension extends Extension {
     disable() {
         this._unbind();
         this._removeIndicator();
+
+        this._pressHold.destroy();
+        this._pressHold = null;
 
         this._settings.disconnectObject(this);
 

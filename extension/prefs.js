@@ -37,10 +37,41 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         });
         window.add(page);
 
+        this._buildHoldGroup(page, settings);
         this._buildShortcutGroup(page, settings);
         this._buildBehaviorGroup(page, settings);
         this._buildAccentsGroup(page, settings);
         this._buildLayoutsGroup(page, settings);
+    }
+
+    _buildHoldGroup(page, settings) {
+        const group = new Adw.PreferencesGroup({
+            title: _('Press and hold'),
+            description: _('Hold a letter to choose its accent, then press its number or use the arrows and Enter.'),
+        });
+        page.add(group);
+
+        const holdRow = new Adw.SwitchRow({
+            title: _('Enabled'),
+            subtitle: _('Works in applications that support the GNOME input method.'),
+        });
+        group.add(holdRow);
+        settings.bind('press-and-hold', holdRow, 'active',
+            Gio.SettingsBindFlags.DEFAULT);
+
+        const durationRow = new Adw.SpinRow({
+            title: _('Hold duration'),
+            subtitle: _('Milliseconds a letter must be held.'),
+            adjustment: new Gtk.Adjustment({
+                lower: 200,
+                upper: 1500,
+                step_increment: 50,
+                page_increment: 100,
+            }),
+        });
+        group.add(durationRow);
+        settings.bind('hold-ms', durationRow, 'value',
+            Gio.SettingsBindFlags.DEFAULT);
     }
 
     _buildShortcutGroup(page, settings) {

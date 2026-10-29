@@ -12,6 +12,17 @@
       <summary>Enabled</summary>
       <description>Enable or disable the shortcut.</description>
     </key>
+    <key name="press-and-hold" type="b">
+      <default>true</default>
+      <summary>Press and hold</summary>
+      <description>Hold an accentable letter to show its variants.</description>
+    </key>
+    <key name="hold-ms" type="i">
+      <default>400</default>
+      <range min="200" max="1500"/>
+      <summary>Hold duration</summary>
+      <description>How long in milliseconds a letter must be held to show its variants.</description>
+    </key>
     <key name="delay-ms" type="i">
       <default>0</default>
       <range min="0" max="1000"/>
