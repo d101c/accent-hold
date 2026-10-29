@@ -29,13 +29,15 @@ else
 fi
 
 # extension.js, metadata.json, prefs.js and stylesheet.css are picked up
-# automatically by `gnome-extensions pack`. The picker module, the panel
-# indicator module, the accent table module and the GSettings schema must be
+# automatically by `gnome-extensions pack`. The picker, press-and-hold and
+# panel indicator modules, the accent table module and the GSettings schema must be
 # declared explicitly. `--podir`/`--gettext-domain` compile po/*.po into the
 # bundle's locale/ directory.
 gnome-extensions pack "$SRC" \
   --extra-source=accentPicker.js \
   --extra-source=defaultAccents.js \
+  --extra-source=holdMachine.js \
+  --extra-source=pressHold.js \
   --extra-source=panelIndicator.js \
   --podir=po \
   --gettext-domain="$DOMAIN" \

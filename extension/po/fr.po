@@ -183,3 +183,18 @@ msgstr "Le raccourci est actif sur tous les claviers."
 #: panelIndicator.js:48
 msgid "Preferences"
 msgstr "Préférences"
+
+msgid "Press and hold"
+msgstr "Appui long"
+
+msgid "Hold a letter to choose its accent, then press its number or use the arrows and Enter."
+msgstr "Maintenez une lettre pour choisir son accent, puis tapez son numéro ou utilisez les flèches et Entrée."
+
+msgid "Works in applications that support the GNOME input method."
+msgstr "Fonctionne dans les applications compatibles avec la méthode de saisie de GNOME."
+
+msgid "Hold duration"
+msgstr "Durée d’appui"
+
+msgid "Milliseconds a letter must be held."
+msgstr "Millisecondes pendant lesquelles maintenir la lettre."
