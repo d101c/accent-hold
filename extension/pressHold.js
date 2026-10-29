@@ -50,10 +50,9 @@ export class PressHold {
         proto.process_key_event_async = function (...args) {
             const callback = args[args.length - 1];
             if (typeof callback === 'function' && self._filter(args[0], args[1], args[2])) {
-                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                    callback(this, CONSUMED);
-                    return GLib.SOURCE_REMOVE;
-                });
+                // Answer right away: the shell only tells Clutter the key
+                // was handled, so no main loop source is left behind.
+                callback(this, CONSUMED);
                 return undefined;
             }
             return self._origProcess.apply(this, args);

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Accent Hold app icon (extensions.gnome.org listing): the symbolic "é" on an
+     Adwaita-blue tile. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#62a0ea"/>
+      <stop offset="1" stop-color="#1c71d8"/>
+    </linearGradient>
+  </defs>
+  <rect x="8" y="12" width="112" height="108" rx="24" fill="#1a5fb4"/>
+  <rect x="8" y="8" width="112" height="108" rx="24" fill="url(#tile)"/>
+  <g fill="#ffffff" transform="translate(17.8 11.6) scale(6)">
+    <path d="M 7.973 5.828 L 10.273 3.728 A 0.850 0.850 0 0 0 9.127 2.472 L 6.827 4.572 A 0.850 0.850 0 0 0 7.973 5.828 Z"/>
+    <path d="M 4.5 9.150 H 12.350 V 10.850 H 4.5 A 0.850 0.850 0 0 1 4.5 9.150 Z"/>
+    <path d="M 12.350 10.000 A 4.350 4.350 0 1 0 10.610 13.480 A 0.850 0.850 0 0 0 9.590 12.120 A 2.650 2.650 0 1 1 10.650 10.000 Z"/>
+  </g>
+</svg>
