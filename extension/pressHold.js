@@ -72,6 +72,9 @@ export class PressHold {
         proto.process_key_event_async_finish = this._origFinish;
         global.display.disconnectObject(this);
         this._cancel();
+        // Remove every source, whatever state the machine was in.
+        this._hide();
+        this._removeSource('_holdId');
         this._removeSource('_commitId');
         this._settings = null;
     }
