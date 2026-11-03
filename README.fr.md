@@ -2,38 +2,71 @@
 
 *Lire dans une autre langue : [English](README.md)*
 
-> **Tapez les caractères accentués à la façon macOS : maintenez la lettre.**
+> **Tapez les caractères accentués en maintenant la lettre.**
 > Maintenez `e`, `a`, `c`, `o`, `n` … et ses variantes (`é è ê ë`, `ç`, `ñ`,
-> `ô` …) apparaissent à côté du curseur de texte ; une frappe normale tape la
-> lettre. Un raccourci (`Super+E`) fait la même chose partout ailleurs.
-> Extension GNOME Shell pure : aucun daemon, aucun privilège, aucune
-> dépendance, installable en un clic depuis extensions.gnome.org.
+> `ô` …) apparaissent dans une petite fenêtre ; une frappe normale tape la
+> lettre. Un raccourci (`Super+E`) ouvre le même sélecteur sans maintenir.
+> Extension GNOME Shell pure (Wayland) : aucun daemon, aucun privilège,
+> aucune dépendance, installable en un clic depuis extensions.gnome.org.
 
-![Accent Hold en action](docs/demo.gif)
+![Maintenir une lettre, choisir son accent](docs/demo-hold.gif)
 
 ## Utilisation
 
-**Appui long** (champs texte, éditeurs, terminal…) :
+**Appui long** (champs texte, éditeurs, terminaux) :
 
 1. maintiens une lettre : `e`, `a`, `c`, `o`, `u`, `n`, `s`, `i`, `y`, `z`
 2. choisis la variante : `1`–`9` (par position de touche, donc ça marche en
-   AZERTY, QWERTZ…), ou `←`/`→` + `Entrée`, ou clic. `Échap` garde la lettre
-   simple.
+   AZERTY, QWERTZ…), ou déplace-toi avec `←`/`→` puis `Entrée`, ou clique.
 
-La lettre maintenue ne se répète pas. `E` (avec Maj) propose `É È Ê Ë …`.
+Tout le reste garde la lettre simple : `Échap`, `Espace`, `Entrée` sans les
+flèches (donc `Entrée` dans un chat envoie toujours le message), ou
+simplement continuer à taper. `E` (avec Maj) propose `É È Ê Ë …`.
 
-**Raccourci**, pour les applications qui n'utilisent pas la méthode de saisie
-de GNOME :
+**Raccourci**, quand on préfère ne pas maintenir :
 
 1. `Super+E` (configurable)
 2. tape une lettre de base
-3. choisis la variante de la même façon.
+3. choisis la variante de la même façon (ici `Entrée` et `Espace`
+   choisissent).
+
+## Où ça marche
+
+Les deux gestes passent par la méthode de saisie de GNOME : ils marchent
+dans les applications qui l'utilisent sous Wayland — applications GTK 3 et
+GTK 4, terminaux VTE (Console, Ptyxis, GNOME Terminal), applications
+Electron lancées avec leur backend Wayland, Firefox. Les applications Qt
+embarquent en général leur propre client IBus et la contournent ; les
+applications XWayland ne sont pas couvertes. L'extension ne fait rien en
+session X11.
+
+La fenêtre s'ouvre sous le curseur de texte quand l'application le signale
+(GTK le fait), sinon sous le pointeur de la souris, et toujours à
+l'intérieur de l'écran.
+
+**À propos de la répétition.** La lettre maintenue ne doit pas devenir
+`eeee`. Sur GNOME 49 et 50 avec les applications qui utilisent le nouveau
+protocole de répétition (wl_keyboard v10 : GTK récent), c'est le Shell qui
+répète et l'extension avale les répétitions. Partout ailleurs (GNOME 45–48,
+et les applications plus anciennes sur toute version), l'application répète
+d'elle-même : l'extension lui signale que la touche est relâchée dès que les
+variantes apparaissent, soit avec les 400 ms par défaut avant la première
+répétition (500 ms), et si des lettres sont quand même passées elle les
+supprime quand l'application rapporte le texte autour du curseur (GTK le
+fait ; pas les terminaux, où un seul Retour arrière est envoyé). Vérifié
+sur GNOME 50 et sur les sources de Mutter et GNOME Shell 45–50, pas en
+exécutant 45–48.
+
+**Versions.** `metadata.json` déclare GNOME 45 à 50. L'auteur utilise 50 ;
+les deux différences d'API avec 45 (`getSurroundingText()` à deux valeurs,
+pas de `findMonitorForPoint()`) sont traitées explicitement, mais rien
+d'autre que 50 n'a été exécuté.
 
 ## Installer
 
 ### Pour un utilisateur (le plus simple)
-Sur [**extensions.gnome.org**](https://extensions.gnome.org/extension/10265/accent-hold/) (GNOME 45 à 50), clique **« Install »**. Fin. Pas de terminal,
-pas de sudo, pas de daemon — c'est une extension Shell pure.
+Sur [**extensions.gnome.org**](https://extensions.gnome.org/extension/10265/accent-hold/), clique **« Install »**. Pas de terminal, pas de sudo,
+pas de daemon.
 
 ### Construire le paquet à uploader
 ```bash
@@ -54,12 +87,19 @@ gnome-extensions enable accent-hold@griffit.gmail.com
 Panneau de configuration intégré (icône réglages dans l'app *Extensions*, ou
 `gnome-extensions prefs accent-hold@griffit.gmail.com`) :
 
-- **Appui long** : activer ou non, et durée d'appui (400 ms par défaut).
-- **Raccourci** : la touche qui ouvre le sélecteur (défaut `Super+E`).
-- **Activer / inhiber** : coupe le raccourci sans désinstaller l'extension.
-- **Délai (ms)** : latence avant l'affichage de la popup (0–1000).
-- **Caractères** : table des variantes accentuées (JSON), surchargeable.
-- **Claviers** : liste des layouts xkb où l'extension est active (vide = tous).
+- **Appui long** : activer ou non (`press-and-hold`), et durée d'appui
+  (`hold-ms`, 400 ms par défaut).
+- **Raccourci** : la touche qui ouvre le sélecteur (`accent-hold-shortcut`,
+  défaut `Super+E` ; un modificateur ou une touche de fonction est exigé),
+  et son interrupteur (`enabled`, qui ne concerne que le raccourci).
+- **Délai (ms)** : latence avant l'affichage du sélecteur du raccourci
+  (`delay-ms`, 0–1000 ; sans effet sur l'appui long).
+- **Fermeture automatique** : garde-fou après lequel toute fenêtre se ferme
+  (`popup-timeout-ms`).
+- **Caractères** : table des variantes (`accents`, JSON : un objet qui
+  associe une lettre à une liste de variantes ; mal formé = table intégrée).
+- **Claviers** : dispositions xkb où l'appui long et le raccourci sont actifs
+  (`layouts`, vide = toutes).
 
 Tout est stocké dans GSettings
 (`org.gnome.shell.extensions.accent-hold`). En CLI :
@@ -69,10 +109,8 @@ gsettings set org.gnome.shell.extensions.accent-hold accent-hold-shortcut "['<Su
 
 ## Moteur IBus optionnel (applications X11)
 
-L'appui long marche dans toutes les applications qui utilisent la méthode de
-saisie de GNOME (GTK, la plupart des applis Qt, terminaux). Pour les
-anciennes applications X11, le moteur [`ibus/`](ibus/) offre le même geste via
-IBus. La plupart des gens n'en ont pas besoin.
+Pour les anciennes applications X11, le moteur [`ibus/`](ibus/) offre le
+même geste via IBus. La plupart des gens n'en ont pas besoin.
 
 ```bash
 curl -L https://github.com/d101c/accent-hold/archive/refs/tags/v2.0.tar.gz | tar xz
@@ -91,10 +129,10 @@ est sélectionnée, l'extension laisse les touches au moteur. Désinstallation :
 Fonctionnement : l'installeur ajoute une petite option xkb
 (`accenthold:norepeat`, fichiers dans `~/.config/xkb`) qui marque seulement
 les lettres accentuables (a, e, i, o, u, c, n, y, s, z de vos dispositions)
-comme « sans répétition », comme sur macOS. Une lettre maintenue tape un seul
-caractère et ouvre le sélecteur au lieu de `eeee` ; les flèches, Suppr, les
-touches de volume et toutes les autres gardent la répétition native du
-bureau, partout. Relancez l'installeur après avoir ajouté une disposition.
+comme « sans répétition ». Une lettre maintenue tape un seul caractère et
+ouvre le sélecteur au lieu de `eeee` ; les flèches, Suppr, les touches de
+volume et toutes les autres gardent la répétition native du bureau.
+Relancez l'installeur après avoir ajouté une disposition.
 
 Les préférences (table d'accents, délai) s'ouvrent depuis le menu des sources
 de saisie de GNOME (« fr » dans la barre du haut) › *Préférences Accent
@@ -103,11 +141,20 @@ Hold…* : avec le moteur, l'icône propre de l'extension peut être masquée.
 ## Fonctionnement de l'appui long
 
 Sous Wayland, la méthode de saisie de GNOME Shell voit chaque touche tapée
-dans un champ texte avant de la passer à IBus. L'extension observe ces
-touches : une lettre tapée passe telle quelle ; une lettre accentuable
-maintenue ouvre les variantes, ses répétitions sont ignorées, et la variante
-choisie remplace la lettre déjà tapée. Seuls les chiffres, les flèches,
-`Entrée` et `Échap` sont retenus pendant l'affichage des variantes.
+dans un champ texte avant de la passer à IBus. L'extension enveloppe cet
+appel (`IBus.InputContext.prototype.process_key_event_async`, seulement
+tant que l'appui long est activé) et observe les touches : une lettre tapée
+passe telle quelle ; une lettre accentuable maintenue ouvre les variantes,
+et la variante choisie remplace la lettre déjà tapée (`delete_surrounding`
+quand l'application rapporte son texte, sinon un Retour arrière). Seuls les
+chiffres, les flèches, `Échap` et, après navigation aux flèches, `Entrée`
+sont retenus pendant l'affichage des variantes. Les touches mortes
+composent avant que l'extension voie la lettre : maintenir `e` après `´`
+remplace le `é` composé. Dans un terminal avec des modes (vim), le Retour
+arrière arrive à l'application comme n'importe quelle touche.
+
+Le sélecteur du raccourci prend une capture modale le temps de la lettre et
+du choix, puis commet le caractère par la même méthode de saisie.
 L'ancienne variante daemon evdev est archivée dans [`legacy/`](legacy/).
 
 ## Alternative zéro-install : la touche Compose
@@ -123,11 +170,13 @@ Puis `Compose`(Verr.Maj) `e` `'` → é. Pas de popup, mais zéro dépendance.
 Accent Hold a été développé avec une aide importante d'un assistant de code
 IA (Claude, d'Anthropic), qui a écrit l'essentiel du code. L'auteur a choisi
 les fonctions et l'approche, relu les modifications, testé chaque version à la
-main sous GNOME 50 (AZERTY et QWERTY), et maintient le projet. La logique
-d'appui long est couverte par des tests automatiques
-(`gjs -m extension/tests/holdMachine.test.js`, `pytest ibus/tests`), et
-l'extension a aussi été testée dans un GNOME Shell sans écran avec des
-frappes simulées. Les rapports de bug sont lus et traités par un humain.
+main sous GNOME 50 (AZERTY et QWERTY), et maintient le projet. La machine à
+états de l'appui long, l'enveloppe du prototype, le placement des fenêtres
+et l'analyse de la table sont couverts par des tests gjs
+(`extension/tests/run.sh` ; `pytest ibus/tests` pour le moteur). La version
+2.2 fait suite à une relecture de code indépendante dont les constats sont
+listés dans la pull request. Les rapports de bug sont lus et traités par un
+humain.
 
 ## Crédits
 

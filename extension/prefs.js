@@ -58,7 +58,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
     _buildHoldGroup(page, settings) {
         const group = new Adw.PreferencesGroup({
             title: _('Press and hold'),
-            description: _('Hold a letter to choose its accent, then press its number or use the arrows and Enter.'),
+            description: _('Hold a letter to choose its accent: press its number, or move with the arrows and press Enter, or click. Space, or Enter alone, keeps the plain letter.'),
         });
         page.add(group);
 
@@ -252,7 +252,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
 
         const delayRow = new Adw.SpinRow({
             title: _('Delay before display'),
-            subtitle: _('Milliseconds before the popup appears.'),
+            subtitle: _('Milliseconds before the shortcut picker appears (press and hold is not delayed).'),
             adjustment: new Gtk.Adjustment({
                 lower: 0,
                 upper: 1000,
@@ -282,7 +282,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
     _buildAccentsGroup(page, settings, window) {
         const group = new Adw.PreferencesGroup({
             title: _('Accentable characters'),
-            description: _('JSON table: base key → list of accented variants.'),
+            description: _('JSON table: base letter → list of accented variants.'),
         });
         page.add(group);
 
@@ -391,7 +391,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
     _buildLayoutsGroup(page, settings) {
         const group = new Adw.PreferencesGroup({
             title: _('Keyboards'),
-            description: _('Layouts where the shortcut is active (none checked = all active).'),
+            description: _('Layouts where press and hold and the shortcut are active (none checked = all active).'),
         });
         page.add(group);
 
@@ -415,7 +415,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         if (sources.length === 0) {
             const empty = new Adw.ActionRow({
                 title: _('No xkb layout detected'),
-                subtitle: _('The shortcut is active on all keyboards.'),
+                subtitle: _('Accent Hold is active on all keyboards.'),
             });
             group.add(empty);
             return;

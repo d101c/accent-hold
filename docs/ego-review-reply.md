@@ -1,5 +1,10 @@
 # Reply to post on the EGO review page (#72085)
 
+*Historical: this is the reply posted for version 2.1. The clipboard
+mechanism defended below was removed in 2.2 (the picker commits through the
+GNOME input method instead), after an independent review found that the
+restoration it promised was not reliable.*
+
 Copy-paste the text below as the developer reply, then upload the new version
 (rebuilt with `./pack.sh`).
 
