@@ -35,6 +35,50 @@ export function makeKey(fields) {
     };
 }
 
+// Modifier bits of the state IBus receives (IBus.ModifierType, the X11
+// values), written out so this module needs no GI import; ibusMasks.test.js
+// checks them against the real enum.
+const RELEASE_MASK = 1 << 30;
+// Modifiers that turn a letter into a shortcut rather than text: Control,
+// Alt (MOD1), ISO_Level5_Shift (MOD3 on the layouts that have it), Super
+// (MOD4), and the Super/Hyper/Meta virtual bits.
+export const SHORTCUT_MASK = (1 << 2) | (1 << 3) | (1 << 5) | (1 << 6) |
+    (1 << 26) | (1 << 27) | (1 << 28);
+export const MODIFIER_KEYS = new Set([
+    'Shift_L', 'Shift_R', 'Control_L', 'Control_R', 'Alt_L', 'Alt_R',
+    'Meta_L', 'Meta_R', 'Super_L', 'Super_R', 'Hyper_L', 'Hyper_R',
+    'Caps_Lock', 'Shift_Lock', 'Num_Lock', 'Scroll_Lock',
+    'ISO_Level3_Shift', 'ISO_Level5_Shift', 'Mode_switch',
+    'ISO_Next_Group', 'ISO_Prev_Group', 'Multi_key',
+]);
+
+// Build the key the machine works on from what the input method filter
+// sees: `keyval`, evdev `keycode` and IBus `state`, plus the keysym `name`
+// (IBus.keyval_name, '' when unknown) and the character it produces
+// (IBus.keyval_to_unicode: a one-character string in gjs, '' or 0 for none).
+export function describeKey(keyval, keycode, state, name, unicode) {
+    let char = unicode;
+    if (typeof char === 'number')
+        char = char > 0 ? String.fromCodePoint(char) : '';
+    if (!char || /\p{C}/u.test(char))
+        char = '';
+    let keypadDigit = -1;
+    const kp = /^KP_([1-9])$/.exec(name);
+    if (kp)
+        keypadDigit = Number(kp[1]) - 1;
+    return makeKey({
+        keyval,
+        keycode,
+        state: state & ~RELEASE_MASK,
+        char,
+        release: (state & RELEASE_MASK) !== 0,
+        shortcut: (state & SHORTCUT_MASK) !== 0,
+        modifier: MODIFIER_KEYS.has(name),
+        name: NAV_KEYS.has(name) ? name : '',
+        keypadDigit,
+    });
+}
+
 // Number of `base` characters right before the cursor in the surrounding
 // text, or -1 when the surrounding text cannot be trusted. `surrounding` is
 // what InputMethod.getSurroundingText() returns: [text, cursor] on GNOME 45,

@@ -4,7 +4,7 @@ import IBus from 'gi://IBus';
 import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as KeyboardStatus from 'resource:///org/gnome/shell/ui/status/keyboard.js';
-import {HoldMachine, NAV_KEYS, makeKey, surroundingRun, deletableCount} from './holdMachine.js';
+import {HoldMachine, describeKey, surroundingRun, deletableCount} from './holdMachine.js';
 import {installKeyFilter} from './imPatch.js';
 import {monitorAt, clampToMonitor, anchorPoint} from './placement.js';
 
@@ -22,20 +22,6 @@ import {monitorAt, clampToMonitor, anchorPoint} from './placement.js';
 // replacement is committed.
 const COMMIT_DELAY_MS = 120;
 const BACKSPACE_EVCODE = 14;
-
-const MODIFIER_KEYS = new Set([
-    'Shift_L', 'Shift_R', 'Control_L', 'Control_R', 'Alt_L', 'Alt_R',
-    'Meta_L', 'Meta_R', 'Super_L', 'Super_R', 'Hyper_L', 'Hyper_R',
-    'Caps_Lock', 'Shift_Lock', 'Num_Lock', 'Scroll_Lock',
-    'ISO_Level3_Shift', 'ISO_Level5_Shift', 'Mode_switch',
-    'ISO_Next_Group', 'ISO_Prev_Group', 'Multi_key',
-]);
-// Modifiers that turn a letter into a shortcut rather than text. MOD3 is
-// what ISO_Level5_Shift maps to on the layouts that have it.
-const SHORTCUT_MASK = IBus.ModifierType.CONTROL_MASK | IBus.ModifierType.MOD1_MASK |
-    IBus.ModifierType.MOD3_MASK | IBus.ModifierType.MOD4_MASK |
-    IBus.ModifierType.SUPER_MASK | IBus.ModifierType.HYPER_MASK |
-    IBus.ModifierType.META_MASK;
 
 export class PressHold {
     constructor(settings, getTable) {
@@ -130,27 +116,8 @@ export class PressHold {
     }
 
     _key(keyval, keycode, state) {
-        const name = IBus.keyval_name(keyval) || '';
-        let char = IBus.keyval_to_unicode(keyval);
-        if (typeof char === 'number')
-            char = char > 0 ? String.fromCodePoint(char) : '';
-        if (!char || /\p{C}/u.test(char))
-            char = '';
-        let keypadDigit = -1;
-        const kp = /^KP_([1-9])$/.exec(name);
-        if (kp)
-            keypadDigit = Number(kp[1]) - 1;
-        return makeKey({
-            keyval,
-            keycode,
-            state: state & ~IBus.ModifierType.RELEASE_MASK,
-            char,
-            release: (state & IBus.ModifierType.RELEASE_MASK) !== 0,
-            shortcut: (state & SHORTCUT_MASK) !== 0,
-            modifier: MODIFIER_KEYS.has(name),
-            name: NAV_KEYS.has(name) ? name : '',
-            keypadDigit,
-        });
+        return describeKey(keyval, keycode, state,
+            IBus.keyval_name(keyval) || '', IBus.keyval_to_unicode(keyval));
     }
 
     _run(actions) {

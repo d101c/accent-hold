@@ -1,6 +1,6 @@
 // Run: gjs -m extension/tests/holdMachine.test.js
 import System from 'system';
-import {HoldMachine, makeKey, surroundingRun, deletableCount} from '../holdMachine.js';
+import {HoldMachine, makeKey, describeKey, surroundingRun, deletableCount} from '../holdMachine.js';
 import {DEFAULT_ACCENTS} from '../defaultAccents.js';
 
 let failures = 0;
@@ -174,6 +174,117 @@ test('keypad arrows navigate like the arrows', m => {
     check(m.key(nav('KP_Left')).actions[0][1] === 0, 'KP_Left');
     check(m.key(nav('KP_Down')).actions[0][1] === 1, 'KP_Down');
     check(m.key(nav('KP_Up')).actions[0][1] === 0, 'KP_Up');
+});
+
+// -- navigation and selection ------------------------------------------------
+
+test('Tab and ISO_Left_Tab navigate', m => {
+    open(m);
+    check(m.key(nav('Tab')).actions[0][1] === 1, 'Tab forward');
+    check(m.key(nav('ISO_Left_Tab')).actions[0][1] === 0, 'Shift+Tab back');
+});
+
+test('navigation wraps around', m => {
+    open(m);
+    const n = DEFAULT_ACCENTS.e.length;
+    check(m.key(nav('Left')).actions[0][1] === n - 1, 'Left from the first goes to the last');
+    check(m.key(nav('Right')).actions[0][1] === 0, 'Right from the last goes to the first');
+});
+
+test('keypad digits choose', m => {
+    open(m);
+    const r = m.key(makeKey({keyval: 0xffb3, keypadDigit: 2}));
+    check(r.consumed && r.actions[1][2] === 'ê', 'KP_3 is ê');
+});
+
+test('a digit beyond the candidates is swallowed and the popup stays', m => {
+    open(m);
+    const r = m.key(digit(9));
+    check(r.consumed && r.actions.length === 0, 'swallowed, nothing happens');
+    check(m.state === 'open', 'still open');
+});
+
+test('Ctrl+digit while open is a shortcut: forwarded, popup closed', m => {
+    open(m);
+    const r = m.key({...digit(1), shortcut: true});
+    check(!r.consumed, 'forwarded');
+    same(r.actions, [['hide']], 'hidden');
+    check(m.state === 'idle', 'idle');
+});
+
+test('at most nine candidates are offered', m => {
+    const table = {e: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']};
+    const mm = new HoldMachine(() => table);
+    mm.key(e);
+    const show = mm.holdElapsed()[1];
+    check(show[1].length === 9, 'nine');
+    check(mm.key(digit(9)).actions[1][2] === '9', 'digit 9 picks the ninth');
+});
+
+test('candidateClicked ignores bad indexes and the wrong state', m => {
+    same(m.candidateClicked(0), [], 'idle');
+    open(m);
+    same(m.candidateClicked(-1), [], 'negative');
+    same(m.candidateClicked(DEFAULT_ACCENTS.e.length), [], 'past the end');
+    same(m.candidateClicked(1), [['hide'], ['replace', 'e', 'è']], 'click');
+});
+
+// -- cancel, modifiers, rollover, repeats ------------------------------------
+
+test('cancel from each state', m => {
+    same(m.cancel(), [], 'idle');
+    m.key(e);
+    same(m.cancel(), [['disarm']], 'armed');
+    open(m);
+    same(m.cancel(), [['hide']], 'open');
+    check(m.state === 'idle', 'idle after cancel');
+});
+
+test('a modifier press while armed or open is forwarded and changes nothing', m => {
+    const shift = makeKey({keyval: 0xffe1, modifier: true});
+    m.key(e);
+    check(!m.key(shift).consumed && m.state === 'armed', 'armed');
+    check(!m.key({...shift, release: true}).consumed && m.state === 'armed', 'armed, release');
+    m.holdElapsed();
+    check(!m.key(shift).consumed && m.state === 'open', 'open');
+});
+
+test('rollover: a second letter before the release disarms and re-arms', m => {
+    const a = makeKey({keyval: 0x61, keycode: 30, char: 'a'});
+    m.key(e);
+    const r = m.key(a);
+    check(!r.consumed, 'a reaches the application');
+    same(kinds(r.actions), ['disarm', 'arm'], 'disarm e, arm a');
+    check(!m.key(eUp).consumed, 'late release of e forwarded');
+    const show = m.holdElapsed()[1];
+    same(show[1], DEFAULT_ACCENTS.a, 'variants of a');
+});
+
+test('compositor repeats while armed are swallowed', m => {
+    m.key(e);
+    const r = m.key(e);
+    check(r.consumed && r.actions.length === 0, 'repeat swallowed');
+    check(m.state === 'armed', 'still armed');
+    check(!m.key(eUp).consumed && m.state === 'idle', 'release is a tap');
+});
+
+// -- describeKey (what the input method filter hands to the machine) -------
+
+test('describeKey maps the filter arguments to a key', () => {
+    const RELEASE = 1 << 30, CONTROL = 1 << 2, SHIFT = 1 << 0;
+    const press = describeKey(0x65, 18, SHIFT, 'e', 'e');
+    check(press.char === 'e' && !press.release && !press.shortcut && !press.modifier, 'Shift+e is text');
+    check(press.state === SHIFT, 'state kept');
+    const release = describeKey(0x65, 18, RELEASE | SHIFT, 'e', 'e');
+    check(release.release && release.state === SHIFT, 'release bit stripped from state');
+    check(describeKey(0x65, 18, CONTROL, 'e', 'e').shortcut, 'Ctrl+e is a shortcut');
+    check(describeKey(0xffe1, 42, 0, 'Shift_L', '').modifier, 'Shift_L is a modifier');
+    check(describeKey(0xff51, 105, 0, 'Left', '').name === 'Left', 'navigation key named');
+    check(describeKey(0x41, 30, 0, 'A', 'A').name === '', 'letters have no name');
+    check(describeKey(0xffb3, 81, 0, 'KP_3', '3').keypadDigit === 2, 'KP_3 → index 2');
+    check(describeKey(0xff08, 14, 0, 'BackSpace', '\b').char === '', 'control char dropped');
+    check(describeKey(0x65, 18, 0, 'e', 0x65).char === 'e', 'numeric unicode accepted');
+    check(describeKey(0xff51, 105, 0, 'Left', 0).char === '', 'zero unicode is no char');
 });
 
 // -- surrounding text (GNOME 45: [text, cursor]; 46+: [text, cursor, anchor])
