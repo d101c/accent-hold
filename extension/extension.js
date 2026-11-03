@@ -5,13 +5,20 @@ import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/ex
 import {AccentPicker} from './accentPicker.js';
 import {PressHold} from './pressHold.js';
 import {addIndicator} from './panelIndicator.js';
-import {DEFAULT_ACCENTS} from './defaultAccents.js';
+import {DEFAULT_ACCENTS, parseTable} from './defaultAccents.js';
+
+// Mutter keybinding names are global to the session, so the shortcut's
+// settings key (which is also its keybinding name) carries the extension's
+// name.
+const SHORTCUT_KEY = 'accent-hold-shortcut';
+const OLD_SHORTCUT_KEY = 'trigger';
 
 // Hold an accentable letter to choose its accented variant (pressHold.js), or
-// press the `trigger` shortcut (e.g. <Super>e) then type the base letter.
+// press the picker shortcut (e.g. <Super>e) then type the base letter.
 export default class AccentHoldExtension extends Extension {
     enable() {
         this._settings = this.getSettings();
+        this._migrateShortcutKey();
         this._table = this._loadTable();
         this._bound = false;
 
@@ -42,9 +49,10 @@ export default class AccentHoldExtension extends Extension {
         const reloadTable = () => {
             this._table = this._loadTable();
         };
+        // No handler for the shortcut key itself: Mutter watches the settings
+        // key given to addKeybinding() and rebinds on its own.
         this._settings.connectObject(
             'changed::enabled', rebind,
-            'changed::trigger', rebind,
             'changed::accents', reloadTable,
             'changed::show-indicator', toggleIndicator,
             this);
@@ -54,16 +62,18 @@ export default class AccentHoldExtension extends Extension {
         this._unbind();
         this._removeIndicator();
 
-        this._pressHold.destroy();
-        this._pressHold = null;
-
-        this._settings.disconnectObject(this);
-
+        if (this._pressHold) {
+            this._pressHold.destroy();
+            this._pressHold = null;
+        }
         if (this._picker) {
             this._picker.destroy();
             this._picker = null;
         }
-        this._settings = null;
+        if (this._settings) {
+            this._settings.disconnectObject(this);
+            this._settings = null;
+        }
         this._table = null;
     }
 
@@ -93,7 +103,7 @@ export default class AccentHoldExtension extends Extension {
         if (!this._settings.get_boolean('enabled'))
             return;
         Main.wm.addKeybinding(
-            'trigger',
+            SHORTCUT_KEY,
             this._settings,
             Meta.KeyBindingFlags.NONE,
             // Not active on the lock screen.
@@ -106,18 +116,35 @@ export default class AccentHoldExtension extends Extension {
     _unbind() {
         if (!this._bound)
             return;
-        Main.wm.removeKeybinding('trigger');
+        Main.wm.removeKeybinding(SHORTCUT_KEY);
         this._bound = false;
     }
 
-    // Use the user's `accents` override when set, otherwise the built-in table.
+    // 2.1 stored the shortcut under `trigger`. Carry a customized value over
+    // once, then reset the old key so this never runs again.
+    _migrateShortcutKey() {
+        const old = this._settings.get_user_value(OLD_SHORTCUT_KEY);
+        if (old === null)
+            return;
+        if (this._settings.get_user_value(SHORTCUT_KEY) === null)
+            this._settings.set_value(SHORTCUT_KEY, old);
+        this._settings.reset(OLD_SHORTCUT_KEY);
+    }
+
+    // Use the user's `accents` override when set and well-formed, otherwise
+    // the built-in table. A malformed override is reported once, not on
+    // every key press.
     _loadTable() {
-        try {
-            const override = this._settings.get_string('accents');
-            if (override && override.trim() !== '')
-                return JSON.parse(override);
-        } catch (e) {
-            logError(e, 'accent-hold: parse accents setting');
+        const override = this._settings.get_string('accents');
+        if (!override || override.trim() === '')
+            return DEFAULT_ACCENTS;
+        const table = parseTable(override);
+        if (table)
+            return table;
+        if (!this._tableWarned) {
+            this._tableWarned = true;
+            console.warn('accent-hold: the "accents" setting is not a table of ' +
+                'string arrays ({"e": ["é", "è"]}); using the built-in table');
         }
         return DEFAULT_ACCENTS;
     }

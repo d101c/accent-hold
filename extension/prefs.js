@@ -5,7 +5,18 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
 import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
-import {DEFAULT_ACCENTS} from './defaultAccents.js';
+import {DEFAULT_ACCENTS, parseTable} from './defaultAccents.js';
+
+const SHORTCUT_KEY = 'accent-hold-shortcut';
+
+// A shortcut must not hijack an ordinary key: it needs a modifier other than
+// Shift or Caps Lock (Shift+e is just E), or a function key.
+function shortcutAcceptable(keyval, mods) {
+    const strong = mods & ~(Gdk.ModifierType.SHIFT_MASK | Gdk.ModifierType.LOCK_MASK);
+    if (strong !== 0)
+        return true;
+    return keyval >= Gdk.KEY_F1 && keyval <= Gdk.KEY_F35;
+}
 
 // Readable labels for a few common xkb layouts; unknown ids fall back to the raw
 // id. A function (not a const) so _() runs on use, after the gettext domain is
@@ -40,14 +51,14 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         this._buildHoldGroup(page, settings);
         this._buildShortcutGroup(page, settings);
         this._buildBehaviorGroup(page, settings);
-        this._buildAccentsGroup(page, settings);
+        this._buildAccentsGroup(page, settings, window);
         this._buildLayoutsGroup(page, settings);
     }
 
     _buildHoldGroup(page, settings) {
         const group = new Adw.PreferencesGroup({
             title: _('Press and hold'),
-            description: _('Hold a letter to choose its accent, then press its number or use the arrows and Enter.'),
+            description: _('Hold a letter to choose its accent: press its number, or move with the arrows and press Enter, or click. Space, or Enter alone, keeps the plain letter.'),
         });
         page.add(group);
 
@@ -90,10 +101,19 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
             Gio.SettingsBindFlags.DEFAULT);
 
         // Capture button: click, then press the combination.
+        const defaultHint = _('Click the button, then press the combination.');
         const triggerRow = new Adw.ActionRow({
             title: _('Combination'),
-            subtitle: _('Click the button, then press the combination.'),
+            subtitle: defaultHint,
         });
+        const setHint = (msg, error) => {
+            triggerRow.subtitle = msg;
+            if (error)
+                triggerRow.add_css_class('error');
+            else
+                triggerRow.remove_css_class('error');
+        };
+        const rejectHint = _('Use a modifier (Ctrl, Alt, Super…) or a function key.');
 
         const button = new Gtk.Button({
             valign: Gtk.Align.CENTER,
@@ -105,7 +125,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
             return a ? a : _('Disabled');
         };
         const refreshButton = () => {
-            button.label = accelLabel(settings.get_strv('trigger'));
+            button.label = accelLabel(settings.get_strv(SHORTCUT_KEY));
         };
         refreshButton();
 
@@ -138,7 +158,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
                 return Gdk.EVENT_STOP;
             }
             if (keyval === Gdk.KEY_BackSpace || keyval === Gdk.KEY_Delete) {
-                settings.set_strv('trigger', []);
+                settings.set_strv(SHORTCUT_KEY, []);
                 stopCapture();
                 return Gdk.EVENT_STOP;
             }
@@ -150,10 +170,15 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
             if (!Gtk.accelerator_valid(keyval, mask))
                 return Gdk.EVENT_STOP;
 
-            const accel = Gtk.accelerator_name(keyval, mask);
-            if (accel) {
-                settings.set_strv('trigger', [accel]);
+            // A bare letter is a valid accelerator for GTK but would open
+            // the picker on every press of that letter: refuse it.
+            if (!shortcutAcceptable(keyval, mask)) {
+                setHint(rejectHint, true);
+                stopCapture();
+                return Gdk.EVENT_STOP;
             }
+            setHint(defaultHint, false);
+            settings.set_strv(SHORTCUT_KEY, [Gtk.accelerator_name(keyval, mask)]);
             stopCapture();
             return Gdk.EVENT_STOP;
         });
@@ -167,26 +192,30 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
             title: _('Accelerator (text)'),
         });
         const syncEntry = () => {
-            const arr = settings.get_strv('trigger');
+            const arr = settings.get_strv(SHORTCUT_KEY);
             entryRow.text = arr && arr.length ? arr[0] : '';
         };
         syncEntry();
         entryRow.connect('apply', () => {
             const txt = entryRow.text.trim();
             if (txt === '') {
-                settings.set_strv('trigger', []);
+                settings.set_strv(SHORTCUT_KEY, []);
                 return;
             }
+            // Only store what parses and passes the same rule as the
+            // capture; otherwise put the stored value back in the entry.
             const [ok, keyval, mods] = Gtk.accelerator_parse(txt);
-            if (ok && Gtk.accelerator_valid(keyval, mods)) {
-                settings.set_strv('trigger', [Gtk.accelerator_name(keyval, mods)]);
-            } else {
-                settings.set_strv('trigger', [txt]);
+            if (!ok || !Gtk.accelerator_valid(keyval, mods) || !shortcutAcceptable(keyval, mods)) {
+                setHint(rejectHint, true);
+                syncEntry();
+                return;
             }
+            setHint(defaultHint, false);
+            settings.set_strv(SHORTCUT_KEY, [Gtk.accelerator_name(keyval, mods)]);
         });
         group.add(entryRow);
 
-        const changedId = settings.connect('changed::trigger', () => {
+        const changedId = settings.connect(`changed::${SHORTCUT_KEY}`, () => {
             refreshButton();
             syncEntry();
         });
@@ -223,7 +252,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
 
         const delayRow = new Adw.SpinRow({
             title: _('Delay before display'),
-            subtitle: _('Milliseconds before the popup appears.'),
+            subtitle: _('Milliseconds before the shortcut picker appears (press and hold is not delayed).'),
             adjustment: new Gtk.Adjustment({
                 lower: 0,
                 upper: 1000,
@@ -250,10 +279,10 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
             Gio.SettingsBindFlags.DEFAULT);
     }
 
-    _buildAccentsGroup(page, settings) {
+    _buildAccentsGroup(page, settings, window) {
         const group = new Adw.PreferencesGroup({
             title: _('Accentable characters'),
-            description: _('JSON table: base key → list of accented variants.'),
+            description: _('JSON table: base letter → list of accented variants.'),
         });
         page.add(group);
 
@@ -316,10 +345,8 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
                 setStatus(_('Built-in default table active.'), false);
                 return;
             }
-            try {
-                JSON.parse(text);
-            } catch (e) {
-                setStatus(_('Invalid JSON — not saved: ') + e.message, true);
+            if (parseTable(text) === null) {
+                setStatus(_('Not saved: expected {"e": ["é", "è"], …} — an object of string lists.'), true);
                 return;
             }
             settings.set_string('accents', text);
@@ -339,6 +366,16 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
                 return GLib.SOURCE_REMOVE;
             });
         });
+        // Closing the window within the debounce: save now rather than
+        // leaving a timeout behind (or losing the edit).
+        window.connect('close-request', () => {
+            if (saveTimer) {
+                GLib.source_remove(saveTimer);
+                saveTimer = 0;
+                save();
+            }
+            return false;
+        });
 
         resetButton.connect('clicked', () => {
             settings.set_string('accents', '');
@@ -354,7 +391,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
     _buildLayoutsGroup(page, settings) {
         const group = new Adw.PreferencesGroup({
             title: _('Keyboards'),
-            description: _('Layouts where the shortcut is active (none checked = all active).'),
+            description: _('Layouts where press and hold and the shortcut are active (none checked = all active).'),
         });
         page.add(group);
 
@@ -378,7 +415,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         if (sources.length === 0) {
             const empty = new Adw.ActionRow({
                 title: _('No xkb layout detected'),
-                subtitle: _('The shortcut is active on all keyboards.'),
+                subtitle: _('Accent Hold is active on all keyboards.'),
             });
             group.add(empty);
             return;

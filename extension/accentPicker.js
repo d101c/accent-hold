@@ -4,10 +4,20 @@ import Shell from 'gi://Shell';
 import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as KeyboardStatus from 'resource:///org/gnome/shell/ui/status/keyboard.js';
+import {monitorAt, clampToMonitor} from './placement.js';
 
 // Accent picker opened by a keyboard shortcut. Two phases: first wait for a base
 // letter, then show its accented variants for selection. A failsafe timeout and
 // try/catch around the key handler guarantee the modal grab is always released.
+// The chosen character is committed through the GNOME input method, like the
+// press-and-hold variants, so it needs an application using it.
+
+// After the modal grab is released the application re-enables its text
+// input, which takes a round trip; the commit waits for the input method to
+// report a focus again, polling at this interval for at most this many turns.
+const FOCUS_POLL_MS = 20;
+const FOCUS_POLL_MAX = 15;
+
 export class AccentPicker {
     // getTable is a callback because the extension reloads the table when the
     // `accents` setting changes.
@@ -25,11 +35,8 @@ export class AccentPicker {
         this._chips = [];
         this._timeoutId = 0;       // failsafe auto-close
         this._delayId = 0;         // optional delay before opening
-        this._injectId = 0;        // deferred injection
-        this._restoreId = 0;       // clipboard restore
-
-        const seat = Clutter.get_default_backend().get_default_seat();
-        this._vdev = seat.create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE);
+        this._commitId = 0;        // commit waiting for the input method focus
+        this._window = null;       // window focused when the picker opened
     }
 
     start() {
@@ -72,6 +79,7 @@ export class AccentPicker {
         this._variants = [];
         this._index = 0;
         this._chips = [];
+        this._window = global.display.focus_window;
 
         this._actor = new St.BoxLayout({
             style_class: 'accent-popup',
@@ -85,8 +93,7 @@ export class AccentPicker {
         this._actor.add_child(this._hint);
 
         Main.layoutManager.uiGroup.add_child(this._actor);
-        const [x, y] = global.get_pointer();
-        this._actor.set_position(x, y + 24);
+        this._place();
 
         this._grab = Main.pushModal(this._actor, {actionMode: Shell.ActionMode.NORMAL});
         if (!this._grab) {
@@ -160,7 +167,10 @@ export class AccentPicker {
             sym === Clutter.KEY_Alt_L || sym === Clutter.KEY_Alt_R ||
             sym === Clutter.KEY_Super_L || sym === Clutter.KEY_Super_R ||
             sym === Clutter.KEY_Meta_L || sym === Clutter.KEY_Meta_R ||
-            sym === Clutter.KEY_Caps_Lock || sym === Clutter.KEY_ISO_Level3_Shift
+            sym === Clutter.KEY_Hyper_L || sym === Clutter.KEY_Hyper_R ||
+            sym === Clutter.KEY_Caps_Lock || sym === Clutter.KEY_Num_Lock ||
+            sym === Clutter.KEY_ISO_Level3_Shift || sym === Clutter.KEY_ISO_Level5_Shift ||
+            sym === Clutter.KEY_Mode_switch
         );
     }
 
@@ -187,6 +197,21 @@ export class AccentPicker {
             return chip;
         });
         this._highlight();
+        // The popup just grew: keep it on screen.
+        this._place();
+    }
+
+    // Below the pointer, inside its monitor. The picker is meant for
+    // applications that report no text cursor, so the pointer is the anchor.
+    _place() {
+        let [x, y] = global.get_pointer();
+        y += 24;
+        const layout = Main.layoutManager;
+        const monitor = monitorAt(layout.monitors, layout.primaryMonitor, x, y);
+        const [, width] = this._actor.get_preferred_width(-1);
+        const [, height] = this._actor.get_preferred_height(-1);
+        [x, y] = clampToMonitor(x, y, width, height, monitor);
+        this._actor.set_position(Math.round(x), Math.round(y));
     }
 
     _onVariants(event, sym) {
@@ -246,46 +271,29 @@ export class AccentPicker {
 
     _choose(i) {
         const ch = this._variants[i];
-        this._close();          // release the grab before injecting
-        if (!ch)
-            return;
-        // Defer one cycle so popModal restores keyboard focus to the target app
-        // before the character is inserted.
-        this._removeSource('_injectId');
-        this._injectId = GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            this._injectId = 0;
-            this._inject(ch);
-            return GLib.SOURCE_REMOVE;
-        });
+        const window = this._window;
+        this._close();          // release the grab before committing
+        if (ch)
+            this._commitWhenFocused(ch, window);
     }
 
-    // Insert the character by placing it on the clipboard and synthesizing
-    // Shift+Insert. A virtual key event for an off-layout Unicode character has no
-    // keycode and is rejected by mutter, so the clipboard route is used instead;
-    // it also reaches VTE terminals. The previous clipboard contents are restored.
-    _inject(ch) {
-        const cb = St.Clipboard.get_default();
-        cb.get_text(St.ClipboardType.CLIPBOARD, (_c, saved) => {
-            cb.set_text(St.ClipboardType.CLIPBOARD, ch);
-            cb.set_text(St.ClipboardType.PRIMARY, ch);
-            this._pasteAndRestore(saved);
-        });
-    }
-
-    _pasteAndRestore(saved) {
-        if (!this._vdev)
-            return;
-        const t = Clutter.get_current_event_time();
-        this._vdev.notify_keyval(t, Clutter.KEY_Shift_L, Clutter.KeyState.PRESSED);
-        this._vdev.notify_keyval(t, Clutter.KEY_Insert, Clutter.KeyState.PRESSED);
-        this._vdev.notify_keyval(t, Clutter.KEY_Insert, Clutter.KeyState.RELEASED);
-        this._vdev.notify_keyval(t, Clutter.KEY_Shift_L, Clutter.KeyState.RELEASED);
-        // Restore the previous clipboard once the paste has been delivered.
-        this._removeSource('_restoreId');
-        this._restoreId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 300, () => {
-            this._restoreId = 0;
-            St.Clipboard.get_default()
-                .set_text(St.ClipboardType.CLIPBOARD, saved || '');
+    // The modal grab took the keyboard focus away from the application, and
+    // with it the input method focus; it comes back once the application
+    // has re-enabled its text input. Commit then, and only into the window
+    // the picker was opened for.
+    _commitWhenFocused(ch, window) {
+        this._removeSource('_commitId');
+        let turns = 0;
+        this._commitId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, FOCUS_POLL_MS, () => {
+            const im = Main.inputMethod;
+            if (global.display.focus_window !== window || ++turns > FOCUS_POLL_MAX) {
+                this._commitId = 0;
+                return GLib.SOURCE_REMOVE;
+            }
+            if (!im.currentFocus)
+                return GLib.SOURCE_CONTINUE;
+            this._commitId = 0;
+            im.commit(ch);
             return GLib.SOURCE_REMOVE;
         });
     }
@@ -314,13 +322,12 @@ export class AccentPicker {
         this._variants = [];
         this._index = 0;
         this._phase = null;
+        this._window = null;
     }
 
     destroy() {
         this._close();
-        this._removeSource('_injectId');
-        this._removeSource('_restoreId');
+        this._removeSource('_commitId');
         this._settings = null;
-        this._vdev = null;
     }
 }
