@@ -16,12 +16,14 @@ export const OPEN = 'open';
 // KP_* are what the keypad arrows produce with Num Lock off.
 const NAV_PREV = new Set(['Left', 'Up', 'KP_Left', 'KP_Up', 'ISO_Left_Tab']);
 const NAV_NEXT = new Set(['Right', 'Down', 'KP_Right', 'KP_Down', 'Tab']);
-// Keys that close the variants without choosing one and go on to the
-// application: a pause on `e` followed by a space must give "e ", not "é",
-// and Enter in a chat must send the message, not pick a variant.
-const NAV_DISMISS = new Set(['Return', 'KP_Enter', 'space']);
+// Enter picks the highlighted variant, but only once the arrows were used:
+// a pause on `e` followed by Enter in a chat must send the message, not
+// type "é". Space never picks: a pause followed by a space is "e ", not "é".
+// Either key otherwise closes the variants and goes on to the application.
+const NAV_CONFIRM = new Set(['Return', 'KP_Enter']);
+const NAV_DISMISS = new Set(['space']);
 const NAV_CANCEL = new Set(['Escape']);
-export const NAV_KEYS = new Set([...NAV_PREV, ...NAV_NEXT, ...NAV_DISMISS, ...NAV_CANCEL]);
+export const NAV_KEYS = new Set([...NAV_PREV, ...NAV_NEXT, ...NAV_CONFIRM, ...NAV_DISMISS, ...NAV_CANCEL]);
 
 // A key event: {keyval, keycode, state, char, release, shortcut, modifier,
 // name, keypadDigit}. `keycode` is the evdev code, `state` the modifier mask
@@ -247,9 +249,12 @@ export class HoldMachine {
             const n = this.candidates.length;
             const step = NAV_PREV.has(key.name) ? -1 : 1;
             this.index = (this.index + step + n) % n;
+            this.navigated = true;
             return {consumed: true, actions: [['move', this.index]]};
         }
-        if (NAV_DISMISS.has(key.name)) {
+        if (NAV_CONFIRM.has(key.name) && this.navigated)
+            return {consumed: true, actions: this._choose(this.index)};
+        if (NAV_CONFIRM.has(key.name) || NAV_DISMISS.has(key.name)) {
             this._toIdle();
             return {consumed: false, actions: [['hide']]};
         }
@@ -281,6 +286,7 @@ export class HoldMachine {
         this.held = null;
         this.heldKey = null;
         this.released = false;
+        this.navigated = false;
         this.candidates = [];
         this.index = 0;
     }

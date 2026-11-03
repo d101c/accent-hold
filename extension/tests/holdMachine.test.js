@@ -112,6 +112,25 @@ for (const name of ['space', 'Return', 'KP_Enter']) {
     });
 }
 
+test('Enter picks the highlighted variant once the arrows were used', m => {
+    open(m);
+    m.key(eUp);
+    m.key(nav('Right'));
+    const r = m.key(nav('Return'));
+    check(r.consumed, 'Enter swallowed');
+    same(r.actions, [['hide'], ['replace', 'e', 'è']], 'picks è');
+});
+
+test('Enter after navigating with the keypad picks too; space still dismisses', m => {
+    open(m);
+    m.key(nav('KP_Right'));
+    const r = m.key(nav('space', {char: ' '}));
+    check(!r.consumed && r.actions[0][0] === 'hide', 'space closes and goes through');
+    open(m);
+    m.key(nav('Left'));
+    check(m.key(nav('KP_Enter')).consumed, 'KP_Enter picks');
+});
+
 // -- B6: the held letter pressed again -------------------------------------
 
 test('held letter pressed again before its release is a repeat, swallowed', m => {
