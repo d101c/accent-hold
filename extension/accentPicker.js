@@ -4,6 +4,7 @@ import Shell from 'gi://Shell';
 import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as KeyboardStatus from 'resource:///org/gnome/shell/ui/status/keyboard.js';
+import {monitorAt, clampToMonitor} from './placement.js';
 
 // Accent picker opened by a keyboard shortcut. Two phases: first wait for a base
 // letter, then show its accented variants for selection. A failsafe timeout and
@@ -85,8 +86,7 @@ export class AccentPicker {
         this._actor.add_child(this._hint);
 
         Main.layoutManager.uiGroup.add_child(this._actor);
-        const [x, y] = global.get_pointer();
-        this._actor.set_position(x, y + 24);
+        this._place();
 
         this._grab = Main.pushModal(this._actor, {actionMode: Shell.ActionMode.NORMAL});
         if (!this._grab) {
@@ -187,6 +187,21 @@ export class AccentPicker {
             return chip;
         });
         this._highlight();
+        // The popup just grew: keep it on screen.
+        this._place();
+    }
+
+    // Below the pointer, inside its monitor. The picker is meant for
+    // applications that report no text cursor, so the pointer is the anchor.
+    _place() {
+        let [x, y] = global.get_pointer();
+        y += 24;
+        const layout = Main.layoutManager;
+        const monitor = monitorAt(layout.monitors, layout.primaryMonitor, x, y);
+        const [, width] = this._actor.get_preferred_width(-1);
+        const [, height] = this._actor.get_preferred_height(-1);
+        [x, y] = clampToMonitor(x, y, width, height, monitor);
+        this._actor.set_position(Math.round(x), Math.round(y));
     }
 
     _onVariants(event, sym) {

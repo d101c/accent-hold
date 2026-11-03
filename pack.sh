@@ -38,6 +38,7 @@ gnome-extensions pack "$SRC" \
   --extra-source=defaultAccents.js \
   --extra-source=holdMachine.js \
   --extra-source=imPatch.js \
+  --extra-source=placement.js \
   --extra-source=pressHold.js \
   --extra-source=panelIndicator.js \
   --podir=po \

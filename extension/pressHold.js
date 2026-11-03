@@ -6,6 +6,7 @@ import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as KeyboardStatus from 'resource:///org/gnome/shell/ui/status/keyboard.js';
 import {HoldMachine, NAV_KEYS, makeKey, surroundingRun, deletableCount} from './holdMachine.js';
 import {installKeyFilter} from './imPatch.js';
+import {monitorAt, clampToMonitor, anchorPoint} from './placement.js';
 
 // Press-and-hold without an input method engine.
 //
@@ -46,7 +47,16 @@ export class PressHold {
         this._patch = installKeyFilter(IBus.InputContext.prototype,
             (keyval, keycode, state) => this._filter(keyval, keycode, state));
 
-        global.display.connectObject('notify::focus-window', () => this._cancel(), this);
+        // The shell never clears InputMethod._cursorRect, so after a focus
+        // change the stored rectangle belongs to the previous application
+        // until the new one reports its own. The shell stores a fresh object
+        // on every report, so remembering the current one is enough to tell
+        // the two apart.
+        this._staleRect = Main.inputMethod._cursorRect;
+        global.display.connectObject('notify::focus-window', () => {
+            this._staleRect = Main.inputMethod._cursorRect;
+            this._cancel();
+        }, this);
     }
 
     destroy() {
@@ -172,21 +182,19 @@ export class PressHold {
         });
     }
 
-    // Below the text cursor when the application reports it, else the pointer.
+    // Below the text cursor when the focused application reports it, else
+    // below the pointer; always inside the monitor.
     _place() {
-        const rect = Main.inputMethod?._cursorRect;
-        let x, y;
-        if (rect && (rect.x || rect.y)) {
-            [x, y] = [rect.x, rect.y + rect.height + 6];
-        } else {
-            const [px, py] = global.get_pointer();
-            [x, y] = [px, py + 24];
-        }
-        const monitor = Main.layoutManager.findMonitorForPoint?.(x, y) ??
-            Main.layoutManager.primaryMonitor;
-        const [, natWidth] = this._popup.get_preferred_width(-1);
-        if (monitor)
-            x = Math.max(monitor.x, Math.min(x, monitor.x + monitor.width - natWidth));
+        const rect = Main.inputMethod._cursorRect;
+        const window = global.display.focus_window;
+        const frame = window ? window.get_frame_rect() : null;
+        let [x, y] = anchorPoint(rect === this._staleRect ? null : rect, frame,
+            global.get_pointer());
+        const layout = Main.layoutManager;
+        const monitor = monitorAt(layout.monitors, layout.primaryMonitor, x, y);
+        const [, width] = this._popup.get_preferred_width(-1);
+        const [, height] = this._popup.get_preferred_height(-1);
+        [x, y] = clampToMonitor(x, y, width, height, monitor);
         this._popup.set_position(Math.round(x), Math.round(y));
     }
 
