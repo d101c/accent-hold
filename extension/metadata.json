@@ -1,7 +1,7 @@
 {
   "uuid": "accent-hold@griffit.gmail.com",
   "name": "Accent Hold",
-  "description": "Type accented and special characters the macOS way: hold a letter (e, a, c, o, n …) and pick its accented variant (é è ê ë, ç, ñ, ô …) from a popup next to the text cursor, with its number, the arrows or the mouse. A quick tap types the letter as usual, and the held letter does not repeat. Works on any keyboard layout (AZERTY, QWERTZ …), without a daemon or root.\n\nFor applications that do not use the GNOME input method, a configurable shortcut (Super+E by default) opens the same picker: type the base letter, then choose the variant.\n\nPreferences: press-and-hold on/off and duration, shortcut, character table, active keyboard layouts.\n\nClipboard use: the shortcut picker inserts the chosen character by briefly putting it on the clipboard and sending Shift+Insert, then restores your previous clipboard content. Nothing is read or kept otherwise.",
+  "description": "Type accented and special characters the macOS way: hold a letter (e, a, c, o, n …) and pick its accented variant (é è ê ë, ç, ñ, ô …) from a popup next to the text cursor, with its number, the arrows or the mouse. A quick tap types the letter as usual, and the held letter does not repeat. Works on any keyboard layout (AZERTY, QWERTZ …), without a daemon or root.\n\nFor applications that do not use the GNOME input method, a configurable shortcut (Super+E by default) opens the same picker: type the base letter, then choose the variant.\n\nPreferences: press-and-hold on/off and duration, shortcut, character table, active keyboard layouts.",
   "shell-version": [
     "45",
     "46",
