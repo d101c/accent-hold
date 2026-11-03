@@ -19,14 +19,51 @@ const NAV_CONFIRM = new Set(['Return', 'KP_Enter', 'space']);
 const NAV_CANCEL = new Set(['Escape']);
 export const NAV_KEYS = new Set([...NAV_PREV, ...NAV_NEXT, ...NAV_CONFIRM, ...NAV_CANCEL]);
 
-// A key event: {keyval, keycode, char, release, shortcut, modifier, name,
-// keypadDigit}. `char` is '' for non-printing keys, `name` is set for
-// NAV_KEYS only, `keypadDigit` is 0..8 for keypad 1..9, else -1.
+// A key event: {keyval, keycode, state, char, release, shortcut, modifier,
+// name, keypadDigit}. `keycode` is the evdev code, `state` the modifier mask
+// of the press (without the release bit), `char` is '' for non-printing keys,
+// `name` is set for NAV_KEYS only, `keypadDigit` is 0..8 for keypad 1..9,
+// else -1.
 export function makeKey(fields) {
     return {
-        keyval: 0, keycode: 0, char: '', release: false, shortcut: false,
-        modifier: false, name: '', keypadDigit: -1, ...fields,
+        keyval: 0, keycode: 0, state: 0, char: '', release: false,
+        shortcut: false, modifier: false, name: '', keypadDigit: -1, ...fields,
     };
+}
+
+// Number of `base` characters right before the cursor in the surrounding
+// text, or -1 when the surrounding text cannot be trusted. `surrounding` is
+// what InputMethod.getSurroundingText() returns: [text, cursor] on GNOME 45,
+// [text, cursor, anchor] since GNOME 46. Only a collapsed cursor is usable:
+// with a selection the next keystroke replaces it.
+export function surroundingRun(surrounding, base) {
+    if (!Array.isArray(surrounding) || surrounding.length < 2)
+        return -1;
+    const [text, cursor] = surrounding;
+    const anchor = surrounding.length >= 3 ? surrounding[2] : cursor;
+    if (typeof text !== 'string' || typeof cursor !== 'number' || cursor !== anchor)
+        return -1;
+    const chars = Array.from(text);
+    if (cursor < 0 || cursor > chars.length)
+        return -1;
+    let n = 0;
+    while (n < cursor && chars[cursor - 1 - n] === base)
+        n++;
+    return n;
+}
+
+// How many characters to delete before the cursor when replacing the held
+// letter: the letters the application inserted since the hold started (one,
+// plus any client-side key repeats). `before` is the run measured when the
+// key was pressed, `now` the run measured when the variant is chosen. 0 means
+// the surrounding text is unusable or stale: the caller falls back to a
+// single BackSpace.
+export function deletableCount(before, now) {
+    if (now < 1)
+        return 0;
+    if (before < 0)
+        return 1;
+    return now > before ? now - before : 0;
 }
 
 function digitIndex(key) {
@@ -36,7 +73,8 @@ function digitIndex(key) {
 }
 
 // key() returns {consumed, actions}. Actions are arrays:
-//   ['arm'] / ['disarm']            start / cancel the hold timer
+//   ['arm', key] / ['disarm']       start / cancel the hold timer
+//   ['release', key]                tell the application the held key is up
 //   ['show', candidates, index]     show the variants
 //   ['move', index]                 move the highlight
 //   ['hide']                        hide the variants
@@ -58,10 +96,18 @@ export class HoldMachine {
     holdElapsed() {
         if (this.state !== ARMED)
             return [];
+        const variants = this._getTable()[this.base];
+        if (!Array.isArray(variants) || variants.length === 0) {
+            this._toIdle();
+            return [];
+        }
         this.state = OPEN;
-        this.candidates = this._getTable()[this.base].slice(0, MAX_LABELS);
+        this.candidates = variants.slice(0, MAX_LABELS);
         this.index = 0;
-        return [['show', this.candidates, this.index]];
+        // The press reached the application and its release will not until
+        // the user lets go: send a release now so the application stops its
+        // own key repeat (clients that repeat on their side).
+        return [['release', this.heldKey], ['show', this.candidates, this.index]];
     }
 
     candidateClicked(index) {
@@ -82,11 +128,12 @@ export class HoldMachine {
 
     _keyIdle(key) {
         const variants = this._getTable()[key.char];
-        if (!key.release && !key.shortcut && variants?.length) {
+        if (!key.release && !key.shortcut && Array.isArray(variants) && variants.length) {
             this.state = ARMED;
             this.base = key.char;
             this.held = key.keyval;
-            return {consumed: false, actions: [['arm']]};
+            this.heldKey = key;
+            return {consumed: false, actions: [['arm', key]]};
         }
         return {consumed: false, actions: []};
     }
@@ -158,6 +205,7 @@ export class HoldMachine {
         this.state = IDLE;
         this.base = null;
         this.held = null;
+        this.heldKey = null;
         this.candidates = [];
         this.index = 0;
     }

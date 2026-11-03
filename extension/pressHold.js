@@ -4,7 +4,7 @@ import IBus from 'gi://IBus';
 import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as KeyboardStatus from 'resource:///org/gnome/shell/ui/status/keyboard.js';
-import {HoldMachine, NAV_KEYS, makeKey} from './holdMachine.js';
+import {HoldMachine, NAV_KEYS, makeKey, surroundingRun, deletableCount} from './holdMachine.js';
 
 // Press-and-hold without an input method engine.
 //
@@ -42,6 +42,7 @@ export class PressHold {
         this._holdId = 0;
         this._commitId = 0;
         this._timeoutId = 0;
+        this._armRun = -1;
 
         const proto = IBus.InputContext.prototype;
         this._origProcess = proto.process_key_event_async;
@@ -119,6 +120,7 @@ export class PressHold {
         return makeKey({
             keyval,
             keycode,
+            state: state & ~IBus.ModifierType.RELEASE_MASK,
             char,
             release: (state & IBus.ModifierType.RELEASE_MASK) !== 0,
             shortcut: (state & SHORTCUT_MASK) !== 0,
@@ -132,6 +134,10 @@ export class PressHold {
         for (const [kind, ...args] of actions) {
             if (kind === 'arm') {
                 this._removeSource('_holdId');
+                // The letter is not in the application yet: remember how many
+                // identical letters already precede the cursor, to delete only
+                // what gets inserted from now on.
+                this._armRun = surroundingRun(Main.inputMethod.getSurroundingText(), args[0].char);
                 const ms = this._settings.get_int('hold-ms');
                 this._holdId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, ms, () => {
                     this._holdId = 0;
@@ -140,6 +146,8 @@ export class PressHold {
                 });
             } else if (kind === 'disarm') {
                 this._removeSource('_holdId');
+            } else if (kind === 'release') {
+                this._forwardRelease(args[0]);
             } else if (kind === 'show') {
                 this._show(...args);
             } else if (kind === 'move') {
@@ -220,17 +228,33 @@ export class PressHold {
 
     // -- text replacement ----------------------------------------------------
 
-    // The letter was inserted by the application itself: delete it, then
-    // commit the accented variant.
+    // Send the application a release of the held key. The event takes the
+    // same path as the keys IBus engines forward (InputMethod.forward_key):
+    // it is flagged as coming from the input method, so mutter hands it to
+    // the focused client without running it through this filter again. The
+    // real release, forwarded later, is a second release of an already
+    // released key, which clients ignore.
+    _forwardRelease(key) {
+        const im = Main.inputMethod;
+        const time = global.display.get_current_time_roundtrip();
+        im.forward_key(key.keyval, key.keycode + 8,
+            key.state & Clutter.ModifierType.MODIFIER_MASK, time, false);
+    }
+
+    // The letter was inserted by the application itself (possibly several
+    // times if it repeated the key before the release above reached it):
+    // delete what was inserted, then commit the accented variant.
     _replace(base, text) {
         const im = Main.inputMethod;
-        if (!im)
-            return;
-        if (this._canDeleteBeforeCursor(im, base)) {
-            im.delete_surrounding(-1, 1);
+        const count = deletableCount(this._armRun,
+            surroundingRun(im.getSurroundingText(), base));
+        if (count > 0) {
+            im.delete_surrounding(-count, count);
             im.commit(text);
             return;
         }
+        // No usable surrounding text (terminals, some toolkits): one
+        // BackSpace for the letter; client-side repeats cannot be counted.
         const time = global.display.get_current_time_roundtrip();
         const code = BACKSPACE_EVCODE + 8;
         im.forward_key(Clutter.KEY_BackSpace, code, 0, time, true);
@@ -241,16 +265,6 @@ export class PressHold {
             im.commit(text);
             return GLib.SOURCE_REMOVE;
         });
-    }
-
-    // Only trust surrounding text when it shows our letter right before the
-    // cursor: some clients report it but ignore deletions.
-    _canDeleteBeforeCursor(im, base) {
-        const [value, cursor, anchor] = im.getSurroundingText();
-        if (typeof value !== 'string' || cursor !== anchor)
-            return false;
-        const chars = Array.from(value);
-        return cursor > 0 && cursor <= chars.length && chars[cursor - 1] === base;
     }
 
     _removeSource(field) {
