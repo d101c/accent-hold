@@ -43,6 +43,7 @@ export class PressHold {
         this._commitId = 0;
         this._timeoutId = 0;
         this._armRun = -1;
+        this._armWindow = null;
 
         this._patch = installKeyFilter(IBus.InputContext.prototype,
             (keyval, keycode, state) => this._filter(keyval, keycode, state));
@@ -128,6 +129,9 @@ export class PressHold {
                 // identical letters already precede the cursor, to delete only
                 // what gets inserted from now on.
                 this._armRun = surroundingRun(Main.inputMethod.getSurroundingText(), args[0].char);
+                // The replacement must land in the window that got the
+                // letter, not in whatever has the focus a moment later.
+                this._armWindow = global.display.focus_window;
                 const ms = this._settings.get_int('hold-ms');
                 this._holdId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, ms, () => {
                     this._holdId = 0;
@@ -150,8 +154,12 @@ export class PressHold {
         }
     }
 
+    // Focus change, failsafe timeout, disable: drop everything, including
+    // a replacement still waiting for its BackSpace to be processed.
     _cancel() {
         this._run(this._machine.cancel());
+        this._removeSource('_commitId');
+        this._armWindow = null;
     }
 
     // -- variants popup ------------------------------------------------------
@@ -234,6 +242,10 @@ export class PressHold {
     // delete what was inserted, then commit the accented variant.
     _replace(base, text) {
         const im = Main.inputMethod;
+        const window = this._armWindow;
+        this._armWindow = null;
+        if (global.display.focus_window !== window)
+            return;
         const count = deletableCount(this._armRun,
             surroundingRun(im.getSurroundingText(), base));
         if (count > 0) {
@@ -250,7 +262,8 @@ export class PressHold {
         this._removeSource('_commitId');
         this._commitId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, COMMIT_DELAY_MS, () => {
             this._commitId = 0;
-            im.commit(text);
+            if (global.display.focus_window === window)
+                im.commit(text);
             return GLib.SOURCE_REMOVE;
         });
     }
