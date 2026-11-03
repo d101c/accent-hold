@@ -28,6 +28,15 @@ const e = makeKey({keyval: 0x65, keycode: 18, state: 0, char: 'e'});
 const eUp = {...e, release: true};
 const digit = n => makeKey({keyval: 0x30 + n, keycode: n + 1, char: String(n)});
 const x = makeKey({keyval: 0x78, keycode: 45, char: 'x'});
+// Navigation keys with their real keysyms (the machine tracks swallowed keys
+// by keyval).
+const KEYVALS = {
+    Left: 0xff51, Up: 0xff52, Right: 0xff53, Down: 0xff54, Tab: 0xff09,
+    ISO_Left_Tab: 0xfe20, Return: 0xff0d, KP_Enter: 0xff8d, space: 0x20,
+    Escape: 0xff1b, KP_Left: 0xff96, KP_Up: 0xff97, KP_Right: 0xff98,
+    KP_Down: 0xff99,
+};
+const nav = (name, fields = {}) => makeKey({keyval: KEYVALS[name], name, ...fields});
 
 function open(m) {
     m.key(e);
@@ -85,7 +94,7 @@ test('non-array table entries never arm', m => {
 
 test('arrows move, a digit chooses the highlighted neighbour', m => {
     open(m);
-    check(m.key(makeKey({name: 'Right'})).actions[0][1] === 1, 'moves right');
+    check(m.key(nav('Right')).actions[0][1] === 1, 'moves right');
     const r = m.key(digit(2));
     check(r.consumed && r.actions[1][2] === 'è', 'digit 2 is è');
 });
@@ -96,7 +105,7 @@ for (const name of ['space', 'Return', 'KP_Enter']) {
     test(`${name} while open closes without choosing and goes through`, m => {
         open(m);
         m.key(eUp);
-        const r = m.key(makeKey({name, char: name === 'space' ? ' ' : ''}));
+        const r = m.key(nav(name, {char: name === 'space' ? ' ' : ''}));
         check(!r.consumed, `${name} reaches the application`);
         same(r.actions, [['hide']], 'only hides');
         check(m.state === 'idle', 'idle');
@@ -131,6 +140,40 @@ test('other key while open keeps the letter', m => {
 test('non-accentable keys and shortcuts never arm', m => {
     check(m.key(x).actions.length === 0, 'x');
     check(m.key({...e, shortcut: true}).actions.length === 0, 'Ctrl+e');
+});
+
+// -- swallowed keys stay swallowed until released --------------------------
+
+test('a chosen digit: its repeats and release never reach the app', m => {
+    open(m);
+    m.key(eUp);
+    check(m.key(digit(1)).consumed, 'press chooses');
+    check(m.state === 'idle', 'idle after the choice');
+    check(m.key(digit(1)).consumed && m.key(digit(1)).actions.length === 0, 'repeat swallowed');
+    check(m.key({...digit(1), release: true}).consumed, 'release swallowed');
+    check(!m.key(digit(1)).consumed, 'next press is a plain digit again');
+});
+
+test('Escape release is swallowed, the held letter release is not', m => {
+    open(m);
+    check(m.key(nav('Escape')).consumed, 'Escape press');
+    check(m.key(nav('Escape', {release: true})).consumed, 'Escape release');
+    check(!m.key(eUp).consumed, 'held letter release forwarded');
+});
+
+test('cancel forgets swallowed keys', m => {
+    open(m);
+    m.key(digit(9));   // out of range: swallowed, popup stays
+    m.cancel();
+    check(!m.key({...digit(9), release: true}).consumed, 'release forwarded after cancel');
+});
+
+test('keypad arrows navigate like the arrows', m => {
+    open(m);
+    check(m.key(nav('KP_Right')).actions[0][1] === 1, 'KP_Right');
+    check(m.key(nav('KP_Left')).actions[0][1] === 0, 'KP_Left');
+    check(m.key(nav('KP_Down')).actions[0][1] === 1, 'KP_Down');
+    check(m.key(nav('KP_Up')).actions[0][1] === 0, 'KP_Up');
 });
 
 // -- surrounding text (GNOME 45: [text, cursor]; 46+: [text, cursor, anchor])

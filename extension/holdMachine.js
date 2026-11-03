@@ -13,8 +13,9 @@ export const IDLE = 'idle';
 export const ARMED = 'armed';
 export const OPEN = 'open';
 
-const NAV_PREV = new Set(['Left', 'Up', 'ISO_Left_Tab']);
-const NAV_NEXT = new Set(['Right', 'Down', 'Tab']);
+// KP_* are what the keypad arrows produce with Num Lock off.
+const NAV_PREV = new Set(['Left', 'Up', 'KP_Left', 'KP_Up', 'ISO_Left_Tab']);
+const NAV_NEXT = new Set(['Right', 'Down', 'KP_Right', 'KP_Down', 'Tab']);
 // Keys that close the variants without choosing one and go on to the
 // application: a pause on `e` followed by a space must give "e ", not "é",
 // and Enter in a chat must send the message, not pick a variant.
@@ -85,15 +86,32 @@ function digitIndex(key) {
 export class HoldMachine {
     constructor(getTable) {
         this._getTable = getTable;
+        // Keys whose press was swallowed and that are still down: their
+        // repeats and release are swallowed too, whatever the state, so the
+        // application never sees a release without its press.
+        this._swallowed = new Set();
         this._toIdle();
     }
 
     key(key) {
+        if (this._swallowed.has(key.keyval)) {
+            if (key.release)
+                this._swallowed.delete(key.keyval);
+            return {consumed: true, actions: []};
+        }
+        const held = this.held;
+        let result;
         if (this.state === OPEN)
-            return this._keyOpen(key);
-        if (this.state === ARMED)
-            return this._keyArmed(key);
-        return this._keyIdle(key);
+            result = this._keyOpen(key);
+        else if (this.state === ARMED)
+            result = this._keyArmed(key);
+        else
+            result = this._keyIdle(key);
+        // The held letter is the exception: its press reached the
+        // application, so its release must too.
+        if (result.consumed && !key.release && key.keyval !== held)
+            this._swallowed.add(key.keyval);
+        return result;
     }
 
     holdElapsed() {
@@ -126,6 +144,7 @@ export class HoldMachine {
         else if (this.state === ARMED)
             actions.push(['disarm']);
         this._toIdle();
+        this._swallowed.clear();
         return actions;
     }
 
@@ -171,9 +190,7 @@ export class HoldMachine {
                 return {consumed: true, actions: []};
             return this._newKey(key);
         }
-        if (key.release)
-            return {consumed: this._isSelectionKey(key), actions: []};
-        if (key.modifier)
+        if (key.release || key.modifier)
             return {consumed: false, actions: []};
 
         const index = digitIndex(key);
@@ -206,10 +223,6 @@ export class HoldMachine {
         const result = this._keyIdle(key);
         result.actions.unshift(['hide']);
         return result;
-    }
-
-    _isSelectionKey(key) {
-        return digitIndex(key) >= 0 || NAV_KEYS.has(key.name);
     }
 
     _choose(index) {

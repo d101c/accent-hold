@@ -167,7 +167,10 @@ export class AccentPicker {
             sym === Clutter.KEY_Alt_L || sym === Clutter.KEY_Alt_R ||
             sym === Clutter.KEY_Super_L || sym === Clutter.KEY_Super_R ||
             sym === Clutter.KEY_Meta_L || sym === Clutter.KEY_Meta_R ||
-            sym === Clutter.KEY_Caps_Lock || sym === Clutter.KEY_ISO_Level3_Shift
+            sym === Clutter.KEY_Hyper_L || sym === Clutter.KEY_Hyper_R ||
+            sym === Clutter.KEY_Caps_Lock || sym === Clutter.KEY_Num_Lock ||
+            sym === Clutter.KEY_ISO_Level3_Shift || sym === Clutter.KEY_ISO_Level5_Shift ||
+            sym === Clutter.KEY_Mode_switch
         );
     }
 

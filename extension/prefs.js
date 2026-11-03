@@ -51,7 +51,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         this._buildHoldGroup(page, settings);
         this._buildShortcutGroup(page, settings);
         this._buildBehaviorGroup(page, settings);
-        this._buildAccentsGroup(page, settings);
+        this._buildAccentsGroup(page, settings, window);
         this._buildLayoutsGroup(page, settings);
     }
 
@@ -279,7 +279,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
             Gio.SettingsBindFlags.DEFAULT);
     }
 
-    _buildAccentsGroup(page, settings) {
+    _buildAccentsGroup(page, settings, window) {
         const group = new Adw.PreferencesGroup({
             title: _('Accentable characters'),
             description: _('JSON table: base key → list of accented variants.'),
@@ -365,6 +365,16 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
                 save();
                 return GLib.SOURCE_REMOVE;
             });
+        });
+        // Closing the window within the debounce: save now rather than
+        // leaving a timeout behind (or losing the edit).
+        window.connect('close-request', () => {
+            if (saveTimer) {
+                GLib.source_remove(saveTimer);
+                saveTimer = 0;
+                save();
+            }
+            return false;
         });
 
         resetButton.connect('clicked', () => {

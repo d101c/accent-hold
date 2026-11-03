@@ -62,16 +62,18 @@ export default class AccentHoldExtension extends Extension {
         this._unbind();
         this._removeIndicator();
 
-        this._pressHold.destroy();
-        this._pressHold = null;
-
-        this._settings.disconnectObject(this);
-
+        if (this._pressHold) {
+            this._pressHold.destroy();
+            this._pressHold = null;
+        }
         if (this._picker) {
             this._picker.destroy();
             this._picker = null;
         }
-        this._settings = null;
+        if (this._settings) {
+            this._settings.disconnectObject(this);
+            this._settings = null;
+        }
         this._table = null;
     }
 

@@ -30,8 +30,12 @@ const MODIFIER_KEYS = new Set([
     'ISO_Level3_Shift', 'ISO_Level5_Shift', 'Mode_switch',
     'ISO_Next_Group', 'ISO_Prev_Group', 'Multi_key',
 ]);
+// Modifiers that turn a letter into a shortcut rather than text. MOD3 is
+// what ISO_Level5_Shift maps to on the layouts that have it.
 const SHORTCUT_MASK = IBus.ModifierType.CONTROL_MASK | IBus.ModifierType.MOD1_MASK |
-    IBus.ModifierType.MOD4_MASK | IBus.ModifierType.SUPER_MASK;
+    IBus.ModifierType.MOD3_MASK | IBus.ModifierType.MOD4_MASK |
+    IBus.ModifierType.SUPER_MASK | IBus.ModifierType.HYPER_MASK |
+    IBus.ModifierType.META_MASK;
 
 export class PressHold {
     constructor(settings, getTable) {
@@ -44,9 +48,15 @@ export class PressHold {
         this._timeoutId = 0;
         this._armRun = -1;
         this._armWindow = null;
+        this._patch = null;
 
-        this._patch = installKeyFilter(IBus.InputContext.prototype,
-            (keyval, keycode, state) => this._filter(keyval, keycode, state));
+        // Settings read on every key go through a cache; the prototype is
+        // only wrapped while press-and-hold is on.
+        this._settings.connectObject(
+            'changed::press-and-hold', () => this._readSettings(),
+            'changed::layouts', () => this._readSettings(),
+            this);
+        this._readSettings();
 
         // The shell never clears InputMethod._cursorRect, so after a focus
         // change the stored rectangle belongs to the previous application
@@ -61,7 +71,8 @@ export class PressHold {
     }
 
     destroy() {
-        this._patch.remove();
+        this._settings.disconnectObject(this);
+        this._uninstall();
         global.display.disconnectObject(this);
         this._cancel();
         // Remove every source, whatever state the machine was in.
@@ -69,6 +80,29 @@ export class PressHold {
         this._removeSource('_holdId');
         this._removeSource('_commitId');
         this._settings = null;
+    }
+
+    _readSettings() {
+        this._layouts = this._settings.get_strv('layouts');
+        if (this._settings.get_boolean('press-and-hold'))
+            this._install();
+        else
+            this._uninstall();
+    }
+
+    _install() {
+        if (this._patch)
+            return;
+        this._patch = installKeyFilter(IBus.InputContext.prototype,
+            (keyval, keycode, state) => this._filter(keyval, keycode, state));
+    }
+
+    _uninstall() {
+        if (!this._patch)
+            return;
+        this._patch.remove();
+        this._patch = null;
+        this._cancel();
     }
 
     // Returns true when the key must not reach the application.
@@ -87,13 +121,11 @@ export class PressHold {
     }
 
     _active() {
-        if (!this._settings.get_boolean('press-and-hold'))
-            return false;
         const source = KeyboardStatus.getInputSourceManager().currentSource;
         // An IBus engine (ours or a CJK one) handles the keys itself.
         if (!source || source.type !== 'xkb')
             return false;
-        const wanted = this._settings.get_strv('layouts');
+        const wanted = this._layouts;
         return wanted.length === 0 || wanted.includes(source.id) || wanted.includes(source.xkbId);
     }
 
