@@ -83,11 +83,43 @@ test('non-array table entries never arm', m => {
     same(m.key(e).actions, [], 'object entry ignored');
 }, {e: {length: 1}});
 
-test('arrows and Return choose', m => {
+test('arrows move, a digit chooses the highlighted neighbour', m => {
     open(m);
     check(m.key(makeKey({name: 'Right'})).actions[0][1] === 1, 'moves right');
-    const r = m.key(makeKey({name: 'Return'}));
-    check(r.consumed && r.actions[1][2] === 'è', 'Return picks highlighted');
+    const r = m.key(digit(2));
+    check(r.consumed && r.actions[1][2] === 'è', 'digit 2 is è');
+});
+
+// -- B5: space and Enter dismiss, keep the plain letter, reach the app ----
+
+for (const name of ['space', 'Return', 'KP_Enter']) {
+    test(`${name} while open closes without choosing and goes through`, m => {
+        open(m);
+        m.key(eUp);
+        const r = m.key(makeKey({name, char: name === 'space' ? ' ' : ''}));
+        check(!r.consumed, `${name} reaches the application`);
+        same(r.actions, [['hide']], 'only hides');
+        check(m.state === 'idle', 'idle');
+    });
+}
+
+// -- B6: the held letter pressed again -------------------------------------
+
+test('held letter pressed again before its release is a repeat, swallowed', m => {
+    open(m);
+    const r = m.key(e);
+    check(r.consumed && r.actions.length === 0, 'repeat swallowed');
+    check(m.state === 'open', 'still open');
+});
+
+test('held letter pressed again after its release is a new keystroke', m => {
+    open(m);
+    check(!m.key(eUp).consumed, 'release forwarded');
+    const r = m.key(e);
+    check(!r.consumed, 'second e reaches the application');
+    same(kinds(r.actions), ['hide', 'arm'], 'hides and arms again');
+    check(m.state === 'armed', 'armed on the new press');
+    check(!m.key(eUp).consumed && m.state === 'idle', 'tap: "ee" typed, idle');
 });
 
 test('other key while open keeps the letter', m => {

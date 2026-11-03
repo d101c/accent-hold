@@ -15,9 +15,12 @@ export const OPEN = 'open';
 
 const NAV_PREV = new Set(['Left', 'Up', 'ISO_Left_Tab']);
 const NAV_NEXT = new Set(['Right', 'Down', 'Tab']);
-const NAV_CONFIRM = new Set(['Return', 'KP_Enter', 'space']);
+// Keys that close the variants without choosing one and go on to the
+// application: a pause on `e` followed by a space must give "e ", not "é",
+// and Enter in a chat must send the message, not pick a variant.
+const NAV_DISMISS = new Set(['Return', 'KP_Enter', 'space']);
 const NAV_CANCEL = new Set(['Escape']);
-export const NAV_KEYS = new Set([...NAV_PREV, ...NAV_NEXT, ...NAV_CONFIRM, ...NAV_CANCEL]);
+export const NAV_KEYS = new Set([...NAV_PREV, ...NAV_NEXT, ...NAV_DISMISS, ...NAV_CANCEL]);
 
 // A key event: {keyval, keycode, state, char, release, shortcut, modifier,
 // name, keypadDigit}. `keycode` is the evdev code, `state` the modifier mask
@@ -157,8 +160,16 @@ export class HoldMachine {
 
     _keyOpen(key) {
         if (key.keyval === this.held) {
-            // The press reached the application, so must its release.
-            return {consumed: !key.release, actions: []};
+            if (key.release) {
+                // The press reached the application, so must its release.
+                this.released = true;
+                return {consumed: false, actions: []};
+            }
+            // Before the release: a compositor key repeat, swallowed. After
+            // it: the user typed the letter again, a new keystroke.
+            if (!this.released)
+                return {consumed: true, actions: []};
+            return this._newKey(key);
         }
         if (key.release)
             return {consumed: this._isSelectionKey(key), actions: []};
@@ -177,14 +188,20 @@ export class HoldMachine {
             this.index = (this.index + step + n) % n;
             return {consumed: true, actions: [['move', this.index]]};
         }
-        if (NAV_CONFIRM.has(key.name))
-            return {consumed: true, actions: this._choose(this.index)};
+        if (NAV_DISMISS.has(key.name)) {
+            this._toIdle();
+            return {consumed: false, actions: [['hide']]};
+        }
         if (NAV_CANCEL.has(key.name)) {
             this._toIdle();
             return {consumed: true, actions: [['hide']]};
         }
 
-        // Anything else keeps the plain letter and is handled as a new key.
+        return this._newKey(key);
+    }
+
+    // Anything else keeps the plain letter and is handled as a new key.
+    _newKey(key) {
         this._toIdle();
         const result = this._keyIdle(key);
         result.actions.unshift(['hide']);
@@ -206,6 +223,7 @@ export class HoldMachine {
         this.base = null;
         this.held = null;
         this.heldKey = null;
+        this.released = false;
         this.candidates = [];
         this.index = 0;
     }
