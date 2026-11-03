@@ -5,7 +5,7 @@ import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/ex
 import {AccentPicker} from './accentPicker.js';
 import {PressHold} from './pressHold.js';
 import {addIndicator} from './panelIndicator.js';
-import {DEFAULT_ACCENTS} from './defaultAccents.js';
+import {DEFAULT_ACCENTS, parseTable} from './defaultAccents.js';
 
 // Mutter keybinding names are global to the session, so the shortcut's
 // settings key (which is also its keybinding name) carries the extension's
@@ -129,14 +129,20 @@ export default class AccentHoldExtension extends Extension {
         this._settings.reset(OLD_SHORTCUT_KEY);
     }
 
-    // Use the user's `accents` override when set, otherwise the built-in table.
+    // Use the user's `accents` override when set and well-formed, otherwise
+    // the built-in table. A malformed override is reported once, not on
+    // every key press.
     _loadTable() {
-        try {
-            const override = this._settings.get_string('accents');
-            if (override && override.trim() !== '')
-                return JSON.parse(override);
-        } catch (e) {
-            logError(e, 'accent-hold: parse accents setting');
+        const override = this._settings.get_string('accents');
+        if (!override || override.trim() === '')
+            return DEFAULT_ACCENTS;
+        const table = parseTable(override);
+        if (table)
+            return table;
+        if (!this._tableWarned) {
+            this._tableWarned = true;
+            console.warn('accent-hold: the "accents" setting is not a table of ' +
+                'string arrays ({"e": ["é", "è"]}); using the built-in table');
         }
         return DEFAULT_ACCENTS;
     }
