@@ -64,7 +64,7 @@ Panneau de configuration intégré (icône réglages dans l'app *Extensions*, ou
 Tout est stocké dans GSettings
 (`org.gnome.shell.extensions.accent-hold`). En CLI :
 ```bash
-gsettings set org.gnome.shell.extensions.accent-hold trigger "['<Super>grave']"
+gsettings set org.gnome.shell.extensions.accent-hold accent-hold-shortcut "['<Super>grave']"
 ```
 
 ## Moteur IBus optionnel (applications X11)

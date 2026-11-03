@@ -5,18 +5,17 @@ import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as KeyboardStatus from 'resource:///org/gnome/shell/ui/status/keyboard.js';
 import {HoldMachine, NAV_KEYS, makeKey, surroundingRun, deletableCount} from './holdMachine.js';
+import {installKeyFilter} from './imPatch.js';
 
 // Press-and-hold without an input method engine.
 //
 // On Wayland, GNOME Shell's input method (misc/inputMethod.js) sees every key
 // typed into a text field and asks IBus about it through
-// IBus.InputContext.process_key_event_async(). Wrapping that call lets the
-// extension watch the keys and swallow the few it needs (digits, arrows...
-// while the variants are shown); everything else goes on to IBus unchanged.
-// Only applications using the Wayland text-input protocol go through it.
-
-// Stand-in for the GAsyncResult of a key we swallowed.
-const CONSUMED = {};
+// IBus.InputContext.process_key_event_async(). Wrapping that call (imPatch.js)
+// lets the extension watch the keys and swallow the few it needs (digits,
+// arrows... while the variants are shown); everything else goes on to IBus
+// unchanged. Only applications using the Wayland text-input protocol go
+// through it.
 
 // Time given to the application to process a forwarded BackSpace before the
 // replacement is committed.
@@ -44,33 +43,14 @@ export class PressHold {
         this._timeoutId = 0;
         this._armRun = -1;
 
-        const proto = IBus.InputContext.prototype;
-        this._origProcess = proto.process_key_event_async;
-        this._origFinish = proto.process_key_event_async_finish;
-        const self = this;
-        proto.process_key_event_async = function (...args) {
-            const callback = args[args.length - 1];
-            if (typeof callback === 'function' && self._filter(args[0], args[1], args[2])) {
-                // Answer right away: the shell only tells Clutter the key
-                // was handled, so no main loop source is left behind.
-                callback(this, CONSUMED);
-                return undefined;
-            }
-            return self._origProcess.apply(this, args);
-        };
-        proto.process_key_event_async_finish = function (res) {
-            if (res === CONSUMED)
-                return true;
-            return self._origFinish.call(this, res);
-        };
+        this._patch = installKeyFilter(IBus.InputContext.prototype,
+            (keyval, keycode, state) => this._filter(keyval, keycode, state));
 
         global.display.connectObject('notify::focus-window', () => this._cancel(), this);
     }
 
     destroy() {
-        const proto = IBus.InputContext.prototype;
-        proto.process_key_event_async = this._origProcess;
-        proto.process_key_event_async_finish = this._origFinish;
+        this._patch.remove();
         global.display.disconnectObject(this);
         this._cancel();
         // Remove every source, whatever state the machine was in.
@@ -83,7 +63,7 @@ export class PressHold {
     // Returns true when the key must not reach the application.
     _filter(keyval, keycode, state) {
         try {
-            if (!this._active())
+            if (!this._settings || !this._active())
                 return false;
             const result = this._machine.key(this._key(keyval, keycode, state));
             this._run(result.actions);

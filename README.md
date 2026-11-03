@@ -62,7 +62,7 @@ Built-in settings panel (the settings icon in the *Extensions* app, or
 Everything is stored in GSettings
 (`org.gnome.shell.extensions.accent-hold`). From the CLI:
 ```bash
-gsettings set org.gnome.shell.extensions.accent-hold trigger "['<Super>grave']"
+gsettings set org.gnome.shell.extensions.accent-hold accent-hold-shortcut "['<Super>grave']"
 ```
 
 ## Optional IBus engine (X11 applications)

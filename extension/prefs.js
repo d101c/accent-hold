@@ -105,7 +105,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
             return a ? a : _('Disabled');
         };
         const refreshButton = () => {
-            button.label = accelLabel(settings.get_strv('trigger'));
+            button.label = accelLabel(settings.get_strv('accent-hold-shortcut'));
         };
         refreshButton();
 
@@ -138,7 +138,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
                 return Gdk.EVENT_STOP;
             }
             if (keyval === Gdk.KEY_BackSpace || keyval === Gdk.KEY_Delete) {
-                settings.set_strv('trigger', []);
+                settings.set_strv('accent-hold-shortcut', []);
                 stopCapture();
                 return Gdk.EVENT_STOP;
             }
@@ -152,7 +152,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
 
             const accel = Gtk.accelerator_name(keyval, mask);
             if (accel) {
-                settings.set_strv('trigger', [accel]);
+                settings.set_strv('accent-hold-shortcut', [accel]);
             }
             stopCapture();
             return Gdk.EVENT_STOP;
@@ -167,26 +167,26 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
             title: _('Accelerator (text)'),
         });
         const syncEntry = () => {
-            const arr = settings.get_strv('trigger');
+            const arr = settings.get_strv('accent-hold-shortcut');
             entryRow.text = arr && arr.length ? arr[0] : '';
         };
         syncEntry();
         entryRow.connect('apply', () => {
             const txt = entryRow.text.trim();
             if (txt === '') {
-                settings.set_strv('trigger', []);
+                settings.set_strv('accent-hold-shortcut', []);
                 return;
             }
             const [ok, keyval, mods] = Gtk.accelerator_parse(txt);
             if (ok && Gtk.accelerator_valid(keyval, mods)) {
-                settings.set_strv('trigger', [Gtk.accelerator_name(keyval, mods)]);
+                settings.set_strv('accent-hold-shortcut', [Gtk.accelerator_name(keyval, mods)]);
             } else {
-                settings.set_strv('trigger', [txt]);
+                settings.set_strv('accent-hold-shortcut', [txt]);
             }
         });
         group.add(entryRow);
 
-        const changedId = settings.connect('changed::trigger', () => {
+        const changedId = settings.connect('changed::accent-hold-shortcut', () => {
             refreshButton();
             syncEntry();
         });

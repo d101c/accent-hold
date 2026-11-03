@@ -2,10 +2,15 @@
 <schemalist>
   <schema id="org.gnome.shell.extensions.accent-hold"
           path="/org/gnome/shell/extensions/accent-hold/">
+    <key name="accent-hold-shortcut" type="as">
+      <default>['&lt;Super&gt;e']</default>
+      <summary>Picker shortcut</summary>
+      <description>The key combination that opens the accent picker. Namespaced because Mutter keybinding names are global to the session.</description>
+    </key>
     <key name="trigger" type="as">
       <default>['&lt;Super&gt;e']</default>
-      <summary>Trigger shortcut</summary>
-      <description>The key combination that opens the accent picker.</description>
+      <summary>Picker shortcut (before 2.2)</summary>
+      <description>Deprecated: copied to accent-hold-shortcut on first start of 2.2, then reset. Kept so that reading it cannot abort the shell.</description>
     </key>
     <key name="enabled" type="b">
       <default>true</default>
