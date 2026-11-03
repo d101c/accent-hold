@@ -53,6 +53,26 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         this._buildBehaviorGroup(page, settings);
         this._buildAccentsGroup(page, settings, window);
         this._buildLayoutsGroup(page, settings);
+        this._buildFamilyGroup(page);
+    }
+
+    // Accent Hold needs nothing installed. Its siblings do, and carry an
+    // Installation page of their own.
+    _buildFamilyGroup(page) {
+        const group = new Adw.PreferencesGroup({
+            title: _('More from the Hold family'),
+            description: _('Same gesture, same look. Each one installs its engine from its own settings, without a terminal.'),
+        });
+        page.add(group);
+        for (const [title, subtitle, url] of [
+            [_('Voice Hold'), _('Hold a key and dictate, offline.'), 'https://extensions.gnome.org/extension/11610/voice-hold/'],
+            [_('Command Hold'), _('Hold a key and say what to do.'), 'https://github.com/d101c/command-hold'],
+        ]) {
+            const row = new Adw.ActionRow({title, subtitle, activatable: true});
+            row.add_suffix(new Gtk.Image({icon_name: 'external-link-symbolic', valign: Gtk.Align.CENTER}));
+            row.connect('activated', () => Gtk.show_uri(row.get_root(), url, Gdk.CURRENT_TIME));
+            group.add(row);
+        }
     }
 
     _buildHoldGroup(page, settings) {
