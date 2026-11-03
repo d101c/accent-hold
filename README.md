@@ -9,7 +9,7 @@
 > extension: no daemon, no privileges, no dependencies, one-click install from
 > extensions.gnome.org.
 
-![Accent Hold in action](docs/demo.gif)
+![Hold a letter, pick its accent](docs/demo-hold.gif)
 
 ## Usage
 

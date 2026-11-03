@@ -4,8 +4,8 @@ Links:
 - EGO: https://extensions.gnome.org/extension/10265/accent-hold/
 - GitHub: https://github.com/d101c/accent-hold
 - Release: https://github.com/d101c/accent-hold/releases/tag/v2.1
-- Demo GIF: docs/demo.gif (still shows the Super+E shortcut; a new GIF of the
-  hold gesture would help every post below)
+- Demo of the hold gesture: docs/demo-hold.gif (GIF, for Mastodon, LinuxFr)
+  and docs/demo-hold.mp4 (video, better in Matrix for TWIG)
 
 ## Read first: AI rules
 
