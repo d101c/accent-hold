@@ -33,12 +33,13 @@ simplement continuer à taper. `E` (avec Maj) propose `É È Ê Ë …`.
 ## Où ça marche
 
 Les deux gestes passent par la méthode de saisie de GNOME : ils marchent
-dans les applications qui l'utilisent sous Wayland — applications GTK 3 et
-GTK 4, terminaux VTE (Console, Ptyxis, GNOME Terminal), applications
-Electron lancées avec leur backend Wayland, Firefox. Les applications Qt
-embarquent en général leur propre client IBus et la contournent ; les
-applications XWayland ne sont pas couvertes. L'extension ne fait rien en
-session X11.
+dans les applications qui l'utilisent sous Wayland — les applications GTK 3
+et GTK 4 et les terminaux VTE (Console, Ptyxis, GNOME Terminal) sont ce que
+l'auteur utilise et teste. Firefox et les applications Electron lancées
+avec leur backend Wayland parlent le même protocole mais n'ont pas été
+testés par l'auteur. Les applications Qt embarquent en général leur propre
+client IBus et la contournent ; les applications XWayland ne sont pas
+couvertes. L'extension ne fait rien en session X11.
 
 La fenêtre s'ouvre sous le curseur de texte quand l'application le signale
 (GTK le fait), sinon sous le pointeur de la souris, et toujours à

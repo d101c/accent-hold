@@ -32,11 +32,12 @@ arrows (so `Enter` in a chat still sends the message), or just typing on.
 ## Where it works
 
 Both gestures go through the GNOME input method, so they work in
-applications that use it on Wayland: GTK 3 and GTK 4 applications, VTE
-terminals (GNOME Console, Ptyxis, GNOME Terminal), Electron applications
-running with their Wayland backend, Firefox. Qt applications usually bring
-their own IBus client and bypass it; XWayland applications are not covered.
-The extension does nothing on X11 sessions.
+applications that use it on Wayland: GTK 3 and GTK 4 applications and VTE
+terminals (GNOME Console, Ptyxis, GNOME Terminal) are what the author uses
+and tests. Firefox and Electron applications running with their Wayland
+backend speak the same protocol but have not been tested by the author. Qt
+applications usually bring their own IBus client and bypass it; XWayland
+applications are not covered. The extension does nothing on X11 sessions.
 
 The popup opens below the text cursor when the application reports it
 (GTK does), otherwise below the mouse pointer, and always inside the
