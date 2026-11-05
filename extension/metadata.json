@@ -13,5 +13,5 @@
   "settings-schema": "org.gnome.shell.extensions.accent-hold",
   "gettext-domain": "accent-hold",
   "url": "https://github.com/d101c/accent-hold",
-  "version-name": "2.3"
+  "version-name": "2.4"
 }
