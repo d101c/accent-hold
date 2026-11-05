@@ -99,20 +99,29 @@ test('arrows move, a digit chooses the highlighted neighbour', m => {
     check(r.consumed && r.actions[1][2] === 'è', 'digit 2 is è');
 });
 
-// -- B5: space and Enter dismiss, keep the plain letter, reach the app ----
+// -- B5: space dismisses and keeps the plain letter; Enter picks -----------
 
-for (const name of ['space', 'Return', 'KP_Enter']) {
-    test(`${name} while open closes without choosing and goes through`, m => {
+test('space while open closes without choosing and goes through', m => {
+    open(m);
+    m.key(eUp);
+    const r = m.key(nav('space', {char: ' '}));
+    check(!r.consumed, 'space reaches the application');
+    same(r.actions, [['hide']], 'only hides');
+    check(m.state === 'idle', 'idle');
+});
+
+for (const name of ['Return', 'KP_Enter']) {
+    test(`${name} while open picks the highlighted first variant`, m => {
         open(m);
         m.key(eUp);
-        const r = m.key(nav(name, {char: name === 'space' ? ' ' : ''}));
-        check(!r.consumed, `${name} reaches the application`);
-        same(r.actions, [['hide']], 'only hides');
+        const r = m.key(nav(name));
+        check(r.consumed, `${name} swallowed`);
+        same(r.actions, [['hide'], ['replace', 'e', 'é']], 'picks the first variant');
         check(m.state === 'idle', 'idle');
     });
 }
 
-test('Enter picks the highlighted variant once the arrows were used', m => {
+test('Enter picks the highlighted variant after the arrows moved it', m => {
     open(m);
     m.key(eUp);
     m.key(nav('Right'));
