@@ -77,7 +77,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
     _buildHoldGroup(page, settings) {
         const group = new Adw.PreferencesGroup({
             title: _('Press and hold'),
-            description: _('Hold a letter to choose its accent: press its number, or move with the arrows and press Enter, or click. Space, or Enter alone, keeps the plain letter.'),
+            description: _('Hold a letter to choose its accent: press its number, or move with the arrows and press Enter, or click. Space keeps the plain letter.'),
         });
         page.add(group);
 

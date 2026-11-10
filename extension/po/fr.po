@@ -187,8 +187,8 @@ msgstr "Préférences"
 msgid "Press and hold"
 msgstr "Appui long"
 
-msgid "Hold a letter to choose its accent: press its number, or move with the arrows and press Enter, or click. Space, or Enter alone, keeps the plain letter."
-msgstr "Maintenez une lettre pour choisir son accent : tapez son numéro, ou déplacez-vous avec les flèches puis Entrée, ou cliquez. Espace, ou Entrée seule, garde la lettre simple."
+msgid "Hold a letter to choose its accent: press its number, or move with the arrows and press Enter, or click. Space keeps the plain letter."
+msgstr "Maintenez une lettre pour choisir son accent : tapez son numéro, ou déplacez-vous avec les flèches puis Entrée, ou cliquez. Espace garde la lettre simple."
 
 msgid "Works in applications that support the GNOME input method."
 msgstr "Fonctionne dans les applications compatibles avec la méthode de saisie de GNOME."

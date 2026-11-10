@@ -19,15 +19,15 @@
 2. pick the variant: `1`–`9` (by key position, so it works on AZERTY,
    QWERTZ …), or move with `←`/`→` and press `Enter`, or click.
 
-Anything else keeps the plain letter: `Esc`, `Space`, `Enter` without the
-arrows (so `Enter` in a chat still sends the message), or just typing on.
+`Enter` picks the highlighted variant (the first one until you move).
+Anything else keeps the plain letter: `Esc`, `Space`, or just typing on.
 `E` (with Shift) offers `É È Ê Ë …`.
 
 **Shortcut**, when you would rather not hold:
 
 1. `Super+E` (configurable)
 2. type a base letter
-3. pick the variant the same way (`Enter` and `Space` pick here).
+3. pick the variant the same way (here `Space` picks too).
 
 ## Where it works
 
@@ -52,10 +52,10 @@ the key is up as soon as the variants appear, which with the default 400 ms
 hold is before the first repeat (500 ms), and if some letters got in
 anyway it deletes them when the application reports its text around the
 cursor (GTK does; terminals do not, there one BackSpace is sent). This was
-checked on GNOME 50 and against the Mutter and GNOME Shell sources for
-45–50, not by running 45–48.
+checked on GNOME 50 and 51 and against the Mutter and GNOME Shell sources
+for 45–50, not by running 45–49.
 
-**Versions.** `metadata.json` lists GNOME 45 to 50. The author runs 50; the
+**Versions.** `metadata.json` lists GNOME 45 to 51. The author runs 51; the
 two API differences with 45 (`getSurroundingText()` returning two values,
 no `findMonitorForPoint()`) are handled explicitly, but nothing below 50
 has been run.
@@ -143,7 +143,7 @@ and hold is on) and watches the keys: a tapped letter goes through
 untouched; a held accentable letter opens the variants, and the chosen
 variant replaces the letter already typed (`delete_surrounding` when the
 application reports its text, else one BackSpace). Only digits, arrows,
-`Esc` and, after arrow navigation, `Enter` are kept back while the variants
+`Esc` and `Enter` are kept back while the variants
 are shown. Dead keys compose before the extension sees the letter, so
 holding `e` after `´` replaces the composed `é`. In a terminal application
 with modes (vim), the BackSpace goes to the application like any key.

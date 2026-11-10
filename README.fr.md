@@ -19,16 +19,15 @@
 2. choisis la variante : `1`–`9` (par position de touche, donc ça marche en
    AZERTY, QWERTZ…), ou déplace-toi avec `←`/`→` puis `Entrée`, ou clique.
 
-Tout le reste garde la lettre simple : `Échap`, `Espace`, `Entrée` sans les
-flèches (donc `Entrée` dans un chat envoie toujours le message), ou
-simplement continuer à taper. `E` (avec Maj) propose `É È Ê Ë …`.
+`Entrée` choisit la variante surlignée (la première tant qu'on ne bouge pas).
+Tout le reste garde la lettre simple : `Échap`, `Espace`, ou simplement
+continuer à taper. `E` (avec Maj) propose `É È Ê Ë …`.
 
 **Raccourci**, quand on préfère ne pas maintenir :
 
 1. `Super+E` (configurable)
 2. tape une lettre de base
-3. choisis la variante de la même façon (ici `Entrée` et `Espace`
-   choisissent).
+3. choisis la variante de la même façon (ici `Espace` choisit aussi).
 
 ## Où ça marche
 
@@ -55,13 +54,13 @@ variantes apparaissent, soit avec les 400 ms par défaut avant la première
 répétition (500 ms), et si des lettres sont quand même passées elle les
 supprime quand l'application rapporte le texte autour du curseur (GTK le
 fait ; pas les terminaux, où un seul Retour arrière est envoyé). Vérifié
-sur GNOME 50 et sur les sources de Mutter et GNOME Shell 45–50, pas en
-exécutant 45–48.
+sur GNOME 50 et 51 et sur les sources de Mutter et GNOME Shell 45–50, pas
+en exécutant 45–49.
 
-**Versions.** `metadata.json` déclare GNOME 45 à 50. L'auteur utilise 50 ;
+**Versions.** `metadata.json` déclare GNOME 45 à 51. L'auteur utilise 51 ;
 les deux différences d'API avec 45 (`getSurroundingText()` à deux valeurs,
 pas de `findMonitorForPoint()`) sont traitées explicitement, mais rien
-d'autre que 50 n'a été exécuté.
+d'autre que 50 et 51 n'a été exécuté.
 
 ## Installer
 
@@ -148,7 +147,7 @@ tant que l'appui long est activé) et observe les touches : une lettre tapée
 passe telle quelle ; une lettre accentuable maintenue ouvre les variantes,
 et la variante choisie remplace la lettre déjà tapée (`delete_surrounding`
 quand l'application rapporte son texte, sinon un Retour arrière). Seuls les
-chiffres, les flèches, `Échap` et, après navigation aux flèches, `Entrée`
+chiffres, les flèches, `Échap` et `Entrée`
 sont retenus pendant l'affichage des variantes. Les touches mortes
 composent avant que l'extension voie la lettre : maintenir `e` après `´`
 remplace le `é` composé. Dans un terminal avec des modes (vim), le Retour

@@ -88,8 +88,7 @@ msgstr ""
 #: extension/prefs.js:61
 msgid ""
 "Hold a letter to choose its accent: press its number, or move with the "
-"arrows and press Enter, or click. Space, or Enter alone, keeps the plain "
-"letter."
+"arrows and press Enter, or click. Space keeps the plain letter."
 msgstr ""
 
 #: extension/prefs.js:67
