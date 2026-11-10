@@ -54,13 +54,13 @@ variantes apparaissent, soit avec les 400 ms par défaut avant la première
 répétition (500 ms), et si des lettres sont quand même passées elle les
 supprime quand l'application rapporte le texte autour du curseur (GTK le
 fait ; pas les terminaux, où un seul Retour arrière est envoyé). Vérifié
-sur GNOME 50 et sur les sources de Mutter et GNOME Shell 45–50, pas en
-exécutant 45–48.
+sur GNOME 50 et 51 et sur les sources de Mutter et GNOME Shell 45–50, pas
+en exécutant 45–49.
 
-**Versions.** `metadata.json` déclare GNOME 45 à 50. L'auteur utilise 50 ;
+**Versions.** `metadata.json` déclare GNOME 45 à 51. L'auteur utilise 51 ;
 les deux différences d'API avec 45 (`getSurroundingText()` à deux valeurs,
 pas de `findMonitorForPoint()`) sont traitées explicitement, mais rien
-d'autre que 50 n'a été exécuté.
+d'autre que 50 et 51 n'a été exécuté.
 
 ## Installer
 
