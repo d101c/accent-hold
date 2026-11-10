@@ -54,7 +54,7 @@ the macOS gesture to GNOME. Hold `e`, a popup shows é è ê ë, pick one with
 its number, the arrows or the mouse. A tap types `e` as usual. It works in
 GTK apps, VTE terminals and Electron apps with the Wayland backend, on any
 layout (AZERTY, QWERTZ, QWERTY), with no daemon and no root. One click on
-extensions.gnome.org, GNOME 45 to 50.
+extensions.gnome.org, GNOME 45 to 51.
 
 Ten-second GIF: <link>
 Extension: https://extensions.gnome.org/extension/10265/accent-hold/
@@ -86,7 +86,7 @@ that may deserve the same treatment. Accent Hold brings the macOS
 press-and-hold accents to GNOME: hold `e`, a popup shows é è ê ë, pick one
 with its number, the arrows or the mouse; a tap types `e` as usual. Works in
 GTK apps, terminals and Wayland Electron apps, on any layout, with no daemon
-and no root. One click on extensions.gnome.org, GNOME 45 to 50.
+and no root. One click on extensions.gnome.org, GNOME 45 to 51.
 
 GIF: <link>
 Extension: https://extensions.gnome.org/extension/10265/accent-hold/
@@ -107,7 +107,7 @@ Your "Best Gnome Extensions" video is how a lot of people set up their
 desktop, so here is a candidate for the next one. Accent Hold: hold a
 letter, pick its accent from a popup, like on macOS. Tap types normally;
 digits, arrows or the mouse pick; AZERTY and QWERTZ work. No daemon, no
-root, one click on extensions.gnome.org, GNOME 45 to 50. Handy for anyone
+root, one click on extensions.gnome.org, GNOME 45 to 51. Handy for anyone
 who writes in more than one language on a US keyboard.
 
 GIF: <link>
@@ -128,7 +128,7 @@ Accent Hold reprend le geste de macOS. On maintient `e`, une bulle propose
 é è ê ë, on choisit au chiffre, aux flèches ou à la souris ; une frappe
 normale tape `e` comme d'habitude. Ça marche dans les applis GTK, les
 terminaux et les applis Electron en Wayland, en AZERTY comme en QWERTY,
-sans démon ni root. Un clic sur extensions.gnome.org, GNOME 45 à 50.
+sans démon ni root. Un clic sur extensions.gnome.org, GNOME 45 à 51.
 
 GIF de dix secondes : <lien>
 Extension : https://extensions.gnome.org/extension/10265/accent-hold/
@@ -164,7 +164,7 @@ Hi Matt,
 For the rare-apps segment: Accent Hold, a GNOME extension that brings the
 macOS gesture. Hold `e`, pick é è ê ë by number, arrows or mouse; a tap types
 normally. Works in GTK, terminals and Wayland Electron, any layout, no
-daemon, no root, one click on extensions.gnome.org (GNOME 45 to 50).
+daemon, no root, one click on extensions.gnome.org (GNOME 45 to 51).
 
 GIF: <link>
 https://extensions.gnome.org/extension/10265/accent-hold/

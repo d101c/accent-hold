@@ -1,9 +1,9 @@
-# Promo — channels and ready-to-adapt copy (v2.1, October 2026)
+# Promo — channels and ready-to-adapt copy (v2.4, November 2026)
 
 Links:
 - EGO: https://extensions.gnome.org/extension/10265/accent-hold/
 - GitHub: https://github.com/d101c/accent-hold
-- Release: https://github.com/d101c/accent-hold/releases/tag/v2.1
+- Release: https://github.com/d101c/accent-hold/releases/tag/v2.4
 - Demo of the hold gesture: docs/demo-hold.gif (GIF, for Mastodon, LinuxFr)
   and docs/demo-hold.mp4 (video, better in Matrix for TWIG)
 
@@ -43,7 +43,7 @@ Copy below is a starting point to rewrite in your own words.
 
 ## Facts for the TWIG message (write it yourself)
 
-- Accent Hold v2.1 on extensions.gnome.org, GNOME 45 to 50.
+- Accent Hold v2.4 on extensions.gnome.org, GNOME 45 to 51.
 - Hold a letter, its accented variants appear next to the text cursor; pick by
   number (key position, so AZERTY/QWERTZ work), arrows + Enter, or mouse.
 - A tap types normally; the held letter does not repeat.
@@ -55,14 +55,14 @@ Copy below is a starting point to rewrite in your own words.
 
 ## News tip (OMG! Ubuntu, It's FOSS, Linuxiac, 9to5Linux, LinuxLinks)
 
-**Subject:** Accent Hold 2.1: macOS-style press and hold for accents on GNOME
+**Subject:** Accent Hold 2.4: macOS-style press and hold for accents on GNOME
 
 Hi,
 
-Accent Hold is a GNOME Shell extension (GNOME 45 to 50) that brings the macOS
+Accent Hold is a GNOME Shell extension (GNOME 45 to 51) that brings the macOS
 press-and-hold gesture to GNOME: hold a letter and its accented variants
 (é è ê ë, ç, ñ …) appear next to the text cursor; pick one by number, arrows or
-mouse. A tap types the letter as usual. Version 2.1 does this in the extension
+mouse. A tap types the letter as usual. Version 2.4 does this in the extension
 itself, so it is a one-click install from extensions.gnome.org, with no daemon,
 no root and no input method to configure. It works on AZERTY and QWERTZ too.
 
@@ -78,7 +78,7 @@ Thanks for considering it!
 
 ## Mastodon
 
-Accent Hold 2.1 is out: hold a letter on #GNOME and pick its accent, like on
+Accent Hold 2.4 is out: hold a letter on #GNOME and pick its accent, like on
 macOS (é è ê ç ñ …). A tap types normally, the held key doesn't repeat, AZERTY
 and QWERTZ work. One-click install, no daemon, no root.
 
@@ -116,14 +116,14 @@ https://github.com/d101c/accent-hold
 
 ## LinuxFr.org (journal)
 
-**Titre :** Accent Hold 2.1 : l'appui long façon macOS pour les accents sous GNOME
+**Titre :** Accent Hold 2.4 : l'appui long façon macOS pour les accents sous GNOME
 
-Accent Hold est une extension GNOME Shell (GNOME 45 à 50) : on maintient une
+Accent Hold est une extension GNOME Shell (GNOME 45 à 51) : on maintient une
 lettre et ses variantes accentuées (é è ê ë, ç, ñ…) s'affichent à côté du
 curseur ; on choisit au chiffre, aux flèches ou à la souris. Une frappe normale
 tape la lettre, la touche maintenue ne se répète pas, et ça marche en AZERTY.
 
-La version 2.1 fait tout depuis l'extension : elle se branche sur la méthode
+La version 2.4 fait tout depuis l'extension : elle se branche sur la méthode
 de saisie de GNOME Shell, qui voit déjà chaque touche tapée dans un champ
 texte. Installation en un clic, ni démon ni root. Un raccourci (Super+E) reste
 disponible pour les applications X11.
