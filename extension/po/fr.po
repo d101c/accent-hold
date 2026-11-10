@@ -205,8 +205,8 @@ msgstr "Utilisez un modificateur (Ctrl, Alt, Super…) ou une touche de fonction
 msgid "More from the Hold family"
 msgstr "Aussi dans la famille Hold"
 
-msgid "Same gesture, same look. Each one installs its engine from its own settings, without a terminal."
-msgstr "Même geste, même apparence. Chacune installe son moteur depuis ses propres réglages, sans terminal."
+msgid "Same gesture, same look. It installs its engine from its own settings, without a terminal."
+msgstr "Même geste, même apparence. Elle installe son moteur depuis ses propres réglages, sans terminal."
 
 msgid "Voice Hold"
 msgstr "Voice Hold"
@@ -214,8 +214,3 @@ msgstr "Voice Hold"
 msgid "Hold a key and dictate, offline."
 msgstr "Maintenez une touche et dictez, hors-ligne."
 
-msgid "Command Hold"
-msgstr "Command Hold"
-
-msgid "Hold a key and say what to do."
-msgstr "Maintenez une touche et dites quoi faire."
