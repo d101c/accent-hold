@@ -34,10 +34,11 @@ Anything else keeps the plain letter: `Esc`, `Space`, or just typing on.
 Both gestures go through the GNOME input method, so they work in
 applications that use it on Wayland: GTK 3 and GTK 4 applications and VTE
 terminals (GNOME Console, Ptyxis, GNOME Terminal) are what the author uses
-and tests. Firefox and Electron applications running with their Wayland
-backend speak the same protocol but have not been tested by the author. Qt
-applications usually bring their own IBus client and bypass it; XWayland
-applications are not covered. The extension does nothing on X11 sessions.
+and tests. Firefox, Electron applications running with their Wayland
+backend and recent Qt 6 applications (checked with Qt 6.11) speak the same
+protocol but have not been tested as thoroughly. Qt 5 applications bring
+their own IBus client and bypass it, and XWayland applications are not
+covered: there, use the shortcut. The extension does nothing on X11 sessions.
 
 The popup opens below the text cursor when the application reports it
 (GTK does), otherwise below the mouse pointer, and always inside the
@@ -97,6 +98,8 @@ Built-in settings panel (the settings icon in the *Extensions* app, or
   mapping a letter to a list of variants; malformed = built-in table).
 - **Keyboards** — xkb layouts where press and hold and the shortcut are
   active (`layouts`, empty = all).
+- **Top bar icon** — an icon with a quick on/off switch and a link to the
+  preferences (`show-indicator`, off by default since 2.5).
 
 Everything is stored in GSettings
 (`org.gnome.shell.extensions.accent-hold`). From the CLI:

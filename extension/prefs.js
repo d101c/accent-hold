@@ -296,6 +296,14 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         group.add(timeoutRow);
         settings.bind('popup-timeout-ms', timeoutRow, 'value',
             Gio.SettingsBindFlags.DEFAULT);
+
+        const indicatorRow = new Adw.SwitchRow({
+            title: _('Top bar icon'),
+            subtitle: _('Show an icon with a quick on/off switch and a link to these settings.'),
+        });
+        group.add(indicatorRow);
+        settings.bind('show-indicator', indicatorRow, 'active',
+            Gio.SettingsBindFlags.DEFAULT);
     }
 
     _buildAccentsGroup(page, settings, window) {

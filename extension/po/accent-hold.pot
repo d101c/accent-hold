@@ -215,3 +215,11 @@ msgstr ""
 #: extension/prefs.js:418
 msgid "Accent Hold is active on all keyboards."
 msgstr ""
+
+#: prefs.js
+msgid "Top bar icon"
+msgstr ""
+
+#: prefs.js
+msgid "Show an icon with a quick on/off switch and a link to these settings."
+msgstr ""
