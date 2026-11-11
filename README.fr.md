@@ -88,8 +88,9 @@ gnome-extensions enable accent-hold@griffit.gmail.com
 Panneau de configuration intégré (icône réglages dans l'app *Extensions*, ou
 `gnome-extensions prefs accent-hold@griffit.gmail.com`) :
 
-- **Appui long** : activer ou non (`press-and-hold`), et durée d'appui
-  (`hold-ms`, 400 ms par défaut).
+- **Appui long** : activer ou non (`press-and-hold`), durée d'appui
+  (`hold-ms`, 400 ms par défaut), et choix de la variante surlignée en
+  relâchant la lettre (`pick-on-release`, désactivé par défaut).
 - **Raccourci** : la touche qui ouvre le sélecteur (`accent-hold-shortcut`,
   défaut `Super+E` ; un modificateur ou une touche de fonction est exigé),
   et son interrupteur (`enabled`, qui ne concerne que le raccourci).

@@ -103,6 +103,14 @@ msgstr ""
 msgid "Milliseconds a letter must be held."
 msgstr ""
 
+#: extension/prefs.js:107
+msgid "Pick on release"
+msgstr ""
+
+#: extension/prefs.js:108
+msgid "Releasing the letter picks the highlighted variant."
+msgstr ""
+
 #: extension/prefs.js:90
 msgid "Shortcut"
 msgstr ""

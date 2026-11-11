@@ -86,8 +86,9 @@ gnome-extensions enable accent-hold@griffit.gmail.com
 Built-in settings panel (the settings icon in the *Extensions* app, or
 `gnome-extensions prefs accent-hold@griffit.gmail.com`):
 
-- **Press and hold** — on/off (`press-and-hold`), and how long a letter must
-  be held (`hold-ms`, default 400 ms).
+- **Press and hold** — on/off (`press-and-hold`), how long a letter must
+  be held (`hold-ms`, default 400 ms), and whether releasing it picks the
+  highlighted variant (`pick-on-release`, off by default).
 - **Shortcut** — the key that opens the picker (`accent-hold-shortcut`,
   default `Super+E`; a modifier or a function key is required), and its
   on/off switch (`enabled`, which only affects the shortcut).

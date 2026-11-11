@@ -73,6 +73,64 @@ test('hold then digit replaces', m => {
     same(r.actions, [['hide'], ['replace', 'e', 'è']], 'replace è');
 });
 
+const picking = () => new HoldMachine(() => DEFAULT_ACCENTS, () => true);
+
+test('pick on release: the variants open with nothing highlighted', () => {
+    const m = picking();
+    same(open(m)[1][2], -1, 'no highlight');
+});
+
+test('pick on release: release after moving picks the highlighted variant', () => {
+    const m = picking();
+    open(m);
+    check(m.key(nav('Right')).actions[0][1] === 0, 'first Right highlights the first variant');
+    m.key(nav('Right', {release: true}));
+    check(m.key(nav('Right')).actions[0][1] === 1, 'moves right');
+    const r = m.key(eUp);
+    check(!r.consumed, 'held-key release reaches the application');
+    same(r.actions, [['hide'], ['replace', 'e', 'è']], 'picks highlighted variant');
+    check(m.state === 'idle', 'idle after the pick');
+});
+
+test('pick on release: Left from no highlight goes to the last variant', () => {
+    const m = picking();
+    open(m);
+    const last = DEFAULT_ACCENTS.e.length - 1;
+    same(m.key(nav('Left')).actions, [['move', last]], 'last');
+});
+
+test('pick on release: release without moving closes and keeps the plain letter', () => {
+    const m = picking();
+    open(m);
+    const r = m.key(eUp);
+    check(!r.consumed, 'release reaches the application');
+    same(r.actions, [['hide']], 'nothing picked');
+    check(m.state === 'idle', 'variants closed');
+});
+
+test('pick on release: Enter with nothing highlighted closes and goes on', () => {
+    const m = picking();
+    open(m);
+    const r = m.key(nav('Return'));
+    check(!r.consumed, 'Enter reaches the application');
+    same(r.actions, [['hide']], 'plain letter kept');
+});
+
+test('pick on release: off by default', m => {
+    open(m);
+    m.key(nav('Right'));
+    same(m.key(eUp).actions, [], 'nothing picked');
+    check(m.state === 'open', 'variants still shown');
+});
+
+test('pick on release: a quick tap is unchanged', () => {
+    const m = picking();
+    m.key(e);
+    const r = m.key(eUp);
+    check(!r.consumed, 'tap release reaches the application');
+    same(r.actions, [['disarm']], 'tap only disarms');
+});
+
 test('holdElapsed when not armed does nothing', m => {
     same(m.holdElapsed(), [], 'idle');
     open(m);

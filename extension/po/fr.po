@@ -199,6 +199,12 @@ msgstr "Durée d’appui"
 msgid "Milliseconds a letter must be held."
 msgstr "Millisecondes pendant lesquelles maintenir la lettre."
 
+msgid "Pick on release"
+msgstr "Choisir au relâchement"
+
+msgid "Releasing the letter picks the highlighted variant."
+msgstr "Relâcher la lettre choisit la variante surlignée."
+
 msgid "Use a modifier (Ctrl, Alt, Super…) or a function key."
 msgstr "Utilisez un modificateur (Ctrl, Alt, Super…) ou une touche de fonction."
 
