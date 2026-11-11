@@ -98,8 +98,9 @@ Built-in settings panel (the settings icon in the *Extensions* app, or
   mapping a letter to a list of variants; malformed = built-in table).
 - **Keyboards** — xkb layouts where press and hold and the shortcut are
   active (`layouts`, empty = all).
-- **Top bar icon** — an icon with a quick on/off switch and a link to the
-  preferences (`show-indicator`, off by default since 2.5).
+- **Top bar icon** — an icon whose menu pauses the whole extension, opens
+  the preferences or hides the icon (`show-indicator`, off by default since
+  2.5).
 
 Everything is stored in GSettings
 (`org.gnome.shell.extensions.accent-hold`). From the CLI:
