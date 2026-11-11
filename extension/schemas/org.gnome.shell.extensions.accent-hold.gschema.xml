@@ -46,9 +46,9 @@
       <description>Optional JSON overriding the built-in table: an object mapping a letter to a list of variants. Empty or malformed = built-in table.</description>
     </key>
     <key name="show-indicator" type="b">
-      <default>true</default>
+      <default>false</default>
       <summary>Top-bar indicator</summary>
-      <description>Show an icon and menu in the GNOME Shell top bar.</description>
+      <description>Show an icon and menu in the GNOME Shell top bar. Off by default since 2.5.</description>
     </key>
     <key name="layouts" type="as">
       <default>[]</default>

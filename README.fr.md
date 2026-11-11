@@ -34,11 +34,12 @@ continuer à taper. `E` (avec Maj) propose `É È Ê Ë …`.
 Les deux gestes passent par la méthode de saisie de GNOME : ils marchent
 dans les applications qui l'utilisent sous Wayland — les applications GTK 3
 et GTK 4 et les terminaux VTE (Console, Ptyxis, GNOME Terminal) sont ce que
-l'auteur utilise et teste. Firefox et les applications Electron lancées
-avec leur backend Wayland parlent le même protocole mais n'ont pas été
-testés par l'auteur. Les applications Qt embarquent en général leur propre
-client IBus et la contournent ; les applications XWayland ne sont pas
-couvertes. L'extension ne fait rien en session X11.
+l'auteur utilise et teste. Firefox, les applications Electron lancées
+avec leur backend Wayland et les applications Qt 6 récentes (vérifié avec
+Qt 6.11) parlent le même protocole mais n'ont pas été testés aussi à fond.
+Les applications Qt 5 embarquent leur propre client IBus et la contournent,
+et les applications XWayland ne sont pas couvertes : utilisez-y le
+raccourci. L'extension ne fait rien en session X11.
 
 La fenêtre s'ouvre sous le curseur de texte quand l'application le signale
 (GTK le fait), sinon sous le pointeur de la souris, et toujours à
@@ -100,6 +101,9 @@ Panneau de configuration intégré (icône réglages dans l'app *Extensions*, ou
   associe une lettre à une liste de variantes ; mal formé = table intégrée).
 - **Claviers** : dispositions xkb où l'appui long et le raccourci sont actifs
   (`layouts`, vide = toutes).
+- **Icône dans la barre du haut** : une icône avec un interrupteur rapide
+  et un lien vers les préférences (`show-indicator`, masquée par défaut
+  depuis la 2.5).
 
 Tout est stocké dans GSettings
 (`org.gnome.shell.extensions.accent-hold`). En CLI :

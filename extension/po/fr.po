@@ -214,3 +214,11 @@ msgstr "Voice Hold"
 msgid "Hold a key and dictate, offline."
 msgstr "Maintenez une touche et dictez, hors-ligne."
 
+
+#: prefs.js
+msgid "Top bar icon"
+msgstr "Icône dans la barre du haut"
+
+#: prefs.js
+msgid "Show an icon with a quick on/off switch and a link to these settings."
+msgstr "Affiche une icône avec un interrupteur rapide et un lien vers ces réglages."
