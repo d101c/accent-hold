@@ -221,5 +221,9 @@ msgid "Top bar icon"
 msgstr ""
 
 #: prefs.js
-msgid "Show an icon with a quick on/off switch and a link to these settings."
+msgid "Show an icon with a quick on/off switch and a link to these settings. Bring it back here after hiding it from its menu."
+msgstr ""
+
+#: panelIndicator.js
+msgid "Hide this icon"
 msgstr ""

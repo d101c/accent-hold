@@ -299,7 +299,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
 
         const indicatorRow = new Adw.SwitchRow({
             title: _('Top bar icon'),
-            subtitle: _('Show an icon with a quick on/off switch and a link to these settings.'),
+            subtitle: _('Show an icon with a quick on/off switch and a link to these settings. Bring it back here after hiding it from its menu.'),
         });
         group.add(indicatorRow);
         settings.bind('show-indicator', indicatorRow, 'active',

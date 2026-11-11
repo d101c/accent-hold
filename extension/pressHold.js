@@ -40,6 +40,7 @@ export class PressHold {
         // only wrapped while press-and-hold is on.
         this._settings.connectObject(
             'changed::press-and-hold', () => this._readSettings(),
+            'changed::paused', () => this._readSettings(),
             'changed::layouts', () => this._readSettings(),
             this);
         this._readSettings();
@@ -70,7 +71,8 @@ export class PressHold {
 
     _readSettings() {
         this._layouts = this._settings.get_strv('layouts');
-        if (this._settings.get_boolean('press-and-hold'))
+        if (this._settings.get_boolean('press-and-hold') &&
+            !this._settings.get_boolean('paused'))
             this._install();
         else
             this._uninstall();

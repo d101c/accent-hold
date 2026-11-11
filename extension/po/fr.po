@@ -220,5 +220,9 @@ msgid "Top bar icon"
 msgstr "Icône dans la barre du haut"
 
 #: prefs.js
-msgid "Show an icon with a quick on/off switch and a link to these settings."
-msgstr "Affiche une icône avec un interrupteur rapide et un lien vers ces réglages."
+msgid "Show an icon with a quick on/off switch and a link to these settings. Bring it back here after hiding it from its menu."
+msgstr "Affiche une icône avec un interrupteur rapide et un lien vers ces réglages. À réactiver ici après l'avoir masquée depuis son menu."
+
+#: panelIndicator.js
+msgid "Hide this icon"
+msgstr "Masquer cette icône"

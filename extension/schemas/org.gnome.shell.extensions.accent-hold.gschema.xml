@@ -50,6 +50,11 @@
       <summary>Top-bar indicator</summary>
       <description>Show an icon and menu in the GNOME Shell top bar. Off by default since 2.5.</description>
     </key>
+    <key name="paused" type="b">
+      <default>false</default>
+      <summary>Paused</summary>
+      <description>Set from the top-bar menu: turns press-and-hold and the shortcut off without changing their own switches. Reset when the icon is hidden.</description>
+    </key>
     <key name="layouts" type="as">
       <default>[]</default>
       <summary>Active keyboards</summary>

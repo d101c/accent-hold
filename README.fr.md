@@ -101,9 +101,9 @@ Panneau de configuration intégré (icône réglages dans l'app *Extensions*, ou
   associe une lettre à une liste de variantes ; mal formé = table intégrée).
 - **Claviers** : dispositions xkb où l'appui long et le raccourci sont actifs
   (`layouts`, vide = toutes).
-- **Icône dans la barre du haut** : une icône avec un interrupteur rapide
-  et un lien vers les préférences (`show-indicator`, masquée par défaut
-  depuis la 2.5).
+- **Icône dans la barre du haut** : une icône dont le menu met toute
+  l'extension en pause, ouvre les préférences ou masque l'icône
+  (`show-indicator`, masquée par défaut depuis la 2.5).
 
 Tout est stocké dans GSettings
 (`org.gnome.shell.extensions.accent-hold`). En CLI :

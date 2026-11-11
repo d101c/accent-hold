@@ -35,16 +35,20 @@ export default class AccentHoldExtension extends Extension {
         this._indicator = null;
         if (this._settings.get_boolean('show-indicator'))
             this._addIndicator();
+        else
+            this._clearPause();
 
         const rebind = () => {
             this._unbind();
             this._bind();
         };
         const toggleIndicator = () => {
-            if (this._settings.get_boolean('show-indicator'))
+            if (this._settings.get_boolean('show-indicator')) {
                 this._addIndicator();
-            else
+            } else {
                 this._removeIndicator();
+                this._clearPause();
+            }
         };
         const reloadTable = () => {
             this._table = this._loadTable();
@@ -53,6 +57,7 @@ export default class AccentHoldExtension extends Extension {
         // key given to addKeybinding() and rebinds on its own.
         this._settings.connectObject(
             'changed::enabled', rebind,
+            'changed::paused', rebind,
             'changed::accents', reloadTable,
             'changed::show-indicator', toggleIndicator,
             this);
@@ -97,10 +102,18 @@ export default class AccentHoldExtension extends Extension {
         }
     }
 
+    // The pause is set from the icon's menu: without the icon there would be
+    // no way to lift it.
+    _clearPause() {
+        if (this._settings.get_boolean('paused'))
+            this._settings.reset('paused');
+    }
+
     _bind() {
         if (this._bound)
             return;
-        if (!this._settings.get_boolean('enabled'))
+        if (!this._settings.get_boolean('enabled') ||
+            this._settings.get_boolean('paused'))
             return;
         Main.wm.addKeybinding(
             SHORTCUT_KEY,
