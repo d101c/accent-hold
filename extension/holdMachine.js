@@ -156,7 +156,7 @@ export class HoldMachine {
             result = this._keyIdle(key);
         // The held letter is the exception: its press reached the
         // application, so its release must too.
-        if (result.consumed && !key.release && key.keyval !== held)
+        if (result.consumed && !key.release && key.keycode !== held)
             this._swallowed.add(key.keyval);
         return result;
     }
@@ -201,7 +201,8 @@ export class HoldMachine {
         if (!key.release && !key.shortcut && Array.isArray(variants) && variants.length) {
             this.state = ARMED;
             this.base = key.char;
-            this.held = key.keyval;
+            // By keycode: releasing Shift changes the keyval, not the key.
+            this.held = key.keycode;
             this.heldKey = key;
             return {consumed: false, actions: [['arm', key]]};
         }
@@ -209,7 +210,7 @@ export class HoldMachine {
     }
 
     _keyArmed(key) {
-        if (key.keyval === this.held) {
+        if (key.keycode === this.held) {
             if (key.release) {
                 // Quick tap: the letter is already in the application.
                 this._toIdle();
@@ -226,7 +227,7 @@ export class HoldMachine {
     }
 
     _keyOpen(key) {
-        if (key.keyval === this.held) {
+        if (key.keycode === this.held) {
             if (key.release) {
                 // The press reached the application, so must its release.
                 if (this._pickOnRelease()) {

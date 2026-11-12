@@ -131,6 +131,20 @@ test('pick on release: a quick tap is unchanged', () => {
     same(r.actions, [['disarm']], 'tap only disarms');
 });
 
+test('pick on release: letting go of Shift first changes nothing', () => {
+    const m = picking();
+    const E = makeKey({keyval: 0x45, keycode: 18, state: 1, char: 'E'});
+    const shift = makeKey({keyval: 0xffe1, keycode: 42, state: 1, modifier: true});
+    m.key(E);
+    m.holdElapsed();
+    m.key(nav('Right'));
+    check(!m.key({...shift, release: true}).consumed, 'Shift release reaches the application');
+    check(m.key(e).consumed, 'repeat of the key, now lowercase, swallowed');
+    const r = m.key(eUp);
+    check(!r.consumed, 'release reaches the application');
+    same(r.actions, [['hide'], ['replace', 'E', 'É']], 'picks É');
+});
+
 test('holdElapsed when not armed does nothing', m => {
     same(m.holdElapsed(), [], 'idle');
     open(m);
