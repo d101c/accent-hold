@@ -31,15 +31,22 @@ continuer à taper. `E` (avec Maj) propose `É È Ê Ë …`.
 
 ## Où ça marche
 
-Les deux gestes passent par la méthode de saisie de GNOME : ils marchent
-dans les applications qui l'utilisent sous Wayland — les applications GTK 3
-et GTK 4 et les terminaux VTE (Console, Ptyxis, GNOME Terminal) sont ce que
-l'auteur utilise et teste. Firefox, les applications Electron lancées
-avec leur backend Wayland et les applications Qt 6 récentes (vérifié avec
-Qt 6.11) parlent le même protocole mais n'ont pas été testés aussi à fond.
-Les applications Qt 5 embarquent leur propre client IBus et la contournent,
-et les applications XWayland ne sont pas couvertes : utilisez-y le
-raccourci. L'extension ne fait rien en session X11.
+L'appui long passe par la méthode de saisie de GNOME : il marche dans les
+applications qui l'utilisent sous Wayland — les applications GTK 3 et GTK 4,
+les terminaux VTE (Console, Ptyxis, GNOME Terminal), Firefox et Thunderbird,
+Chromium et les applications Electron lancées avec leur backend Wayland, et
+les applications Qt 6 récentes, Qt WebEngine compris (vérifié avec Qt 6.11
+et 6.12).
+
+Les applications qui ne l'utilisent pas n'affichent jamais la fenêtre de
+l'appui long : les applications Qt 5 (elles embarquent leur propre client
+IBus) et les applications XWayland, ce qui est encore le cas de beaucoup
+d'applications Electron (Teams par exemple). Utilisez-y le raccourci : quand
+l'application active n'a pas de méthode de saisie, le sélecteur colle le
+caractère choisi (presse-papiers, `Maj+Inser`) et remet aussitôt l'ancien
+contenu du presse-papiers. Une application Electron lancée avec
+`--ozone-platform=wayland` gagne aussi l'appui long. L'extension ne fait
+rien en session X11.
 
 La fenêtre s'ouvre sous le curseur de texte quand l'application le signale
 (GTK le fait), sinon sous le pointeur de la souris, et toujours à

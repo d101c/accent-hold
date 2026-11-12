@@ -5,18 +5,23 @@ import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as KeyboardStatus from 'resource:///org/gnome/shell/ui/status/keyboard.js';
 import {monitorAt, clampToMonitor} from './placement.js';
+import {PasteInsert} from './pasteInsert.js';
 
 // Accent picker opened by a keyboard shortcut. Two phases: first wait for a base
 // letter, then show its accented variants for selection. A failsafe timeout and
 // try/catch around the key handler guarantee the modal grab is always released.
 // The chosen character is committed through the GNOME input method, like the
-// press-and-hold variants, so it needs an application using it.
+// press-and-hold variants. Applications that do not use it (XWayland, Qt 5)
+// had no input method focus when the picker opened: there the character is
+// pasted instead (pasteInsert.js).
 
 // After the modal grab is released the application re-enables its text
 // input, which takes a round trip; the commit waits for the input method to
 // report a focus again, polling at this interval for at most this many turns.
 const FOCUS_POLL_MS = 20;
 const FOCUS_POLL_MAX = 15;
+// Time given to the application to get the keyboard focus back before a paste.
+const PASTE_DELAY_MS = 80;
 
 export class AccentPicker {
     // getTable is a callback because the extension reloads the table when the
@@ -37,6 +42,8 @@ export class AccentPicker {
         this._delayId = 0;         // optional delay before opening
         this._commitId = 0;        // commit waiting for the input method focus
         this._window = null;       // window focused when the picker opened
+        this._usesIm = false;      // that window had the input method focus
+        this._paste = new PasteInsert();
     }
 
     start() {
@@ -80,6 +87,7 @@ export class AccentPicker {
         this._index = 0;
         this._chips = [];
         this._window = global.display.focus_window;
+        this._usesIm = !!Main.inputMethod.currentFocus;
 
         this._actor = new St.BoxLayout({
             style_class: 'accent-popup',
@@ -272,9 +280,24 @@ export class AccentPicker {
     _choose(i) {
         const ch = this._variants[i];
         const window = this._window;
+        const usesIm = this._usesIm;
         this._close();          // release the grab before committing
-        if (ch)
+        if (!ch || !window)
+            return;
+        if (usesIm)
             this._commitWhenFocused(ch, window);
+        else
+            this._pasteWhenFocused(ch, window);
+    }
+
+    _pasteWhenFocused(ch, window) {
+        this._removeSource('_commitId');
+        this._commitId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, PASTE_DELAY_MS, () => {
+            this._commitId = 0;
+            if (global.display.focus_window === window)
+                this._paste.insert(ch);
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     // The modal grab took the keyboard focus away from the application, and
@@ -323,11 +346,13 @@ export class AccentPicker {
         this._index = 0;
         this._phase = null;
         this._window = null;
+        this._usesIm = false;
     }
 
     destroy() {
         this._close();
         this._removeSource('_commitId');
+        this._paste.destroy();
         this._settings = null;
     }
 }
