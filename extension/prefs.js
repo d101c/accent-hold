@@ -5,7 +5,9 @@ import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
 import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
-import {DEFAULT_ACCENTS, parseTable} from './defaultAccents.js';
+import {DEFAULT_ACCENTS, formatTable, parseTable} from './defaultAccents.js';
+import {BUILTIN_PRESETS, builtinTable, serializePreset, parsePresetFile,
+    parseUserPresets, sameTable} from './presets.js';
 
 const SHORTCUT_KEY = 'accent-hold-shortcut';
 
@@ -36,6 +38,12 @@ function layoutLabels() {
         'ch': _('Swiss (ch)'),
         'ca': _('Canadian (ca)'),
     };
+}
+
+// Fill the %s of an already translated string. Plain replace: String.format
+// is not guaranteed to exist in the preferences process.
+function fmt(text, arg) {
+    return text.replace('%s', () => String(arg));
 }
 
 export default class AccentHoldPreferences extends ExtensionPreferences {
@@ -87,6 +95,14 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         });
         group.add(holdRow);
         settings.bind('press-and-hold', holdRow, 'active',
+            Gio.SettingsBindFlags.DEFAULT);
+
+        const belowRow = new Adw.SwitchRow({
+            title: _('Numbers below the characters'),
+            subtitle: _('Show each number in a row under its character instead of beside it.'),
+        });
+        group.add(belowRow);
+        settings.bind('numbers-below', belowRow, 'active',
             Gio.SettingsBindFlags.DEFAULT);
 
         const durationRow = new Adw.SpinRow({
@@ -315,13 +331,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
     }
 
     _buildAccentsGroup(page, settings, window) {
-        const group = new Adw.PreferencesGroup({
-            title: _('Accentable characters'),
-            description: _('JSON table: base letter → list of accented variants.'),
-        });
-        page.add(group);
-
-        const defaultJson = JSON.stringify(DEFAULT_ACCENTS, null, 2);
+        const defaultJson = formatTable(DEFAULT_ACCENTS);
 
         const buffer = new Gtk.TextBuffer();
         const loadFromSettings = () => {
@@ -330,7 +340,26 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         };
         loadFromSettings();
 
-        const textView = new Gtk.TextView({
+        // Status line shared by the group below and the large editor window.
+        const statusListeners = [];
+        let lastStatus = [_('Modified = saved automatically.'), false];
+        const setStatus = (msg, error) => {
+            lastStatus = [msg, error];
+            for (const fn of statusListeners)
+                fn(msg, error);
+        };
+
+        // ---- Presets ------------------------------------------------------
+        this._buildPresetsGroup(page, settings, window, buffer, setStatus);
+
+        // ---- Table editor -------------------------------------------------
+        const group = new Adw.PreferencesGroup({
+            title: _('Accentable characters'),
+            description: _('JSON table: base letter → list of accented variants.'),
+        });
+        page.add(group);
+
+        const makeTextView = () => new Gtk.TextView({
             buffer: buffer,
             monospace: true,
             top_margin: 8,
@@ -341,18 +370,25 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         });
 
         const scrolled = new Gtk.ScrolledWindow({
-            min_content_height: 220,
+            min_content_height: 360,
             vexpand: true,
             hscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
             vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
         });
         scrolled.add_css_class('card');
-        scrolled.set_child(textView);
+        scrolled.set_child(makeTextView());
         group.add(scrolled);
 
         const statusRow = new Adw.ActionRow({
             title: 'JSON',
-            subtitle: _('Modified = saved automatically.'),
+            subtitle: lastStatus[0],
+        });
+        statusListeners.push((msg, error) => {
+            statusRow.subtitle = msg;
+            if (error)
+                statusRow.add_css_class('error');
+            else
+                statusRow.remove_css_class('error');
         });
 
         const saveButton = new Gtk.Button({
@@ -364,14 +400,12 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
             valign: Gtk.Align.CENTER,
         });
         resetButton.add_css_class('destructive-action');
-
-        const setStatus = (msg, error) => {
-            statusRow.subtitle = msg;
-            if (error)
-                statusRow.add_css_class('error');
-            else
-                statusRow.remove_css_class('error');
-        };
+        const largeButton = new Gtk.Button({
+            icon_name: 'view-fullscreen-symbolic',
+            tooltip_text: _('Edit in a larger window'),
+            valign: Gtk.Align.CENTER,
+        });
+        largeButton.add_css_class('flat');
 
         const save = () => {
             const text = buffer.text.trim();
@@ -418,9 +452,320 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
             setStatus(_('Reset to the built-in table.'), false);
         });
 
+        // A roomy editor: same buffer, so both views stay in sync and the
+        // debounced save above covers either one.
+        largeButton.connect('clicked', () => {
+            const big = new Adw.Window({
+                title: _('Accentable characters'),
+                modal: true,
+                transient_for: window,
+                default_width: 860,
+                default_height: 680,
+            });
+            const toolbar = new Adw.ToolbarView();
+            toolbar.add_top_bar(new Adw.HeaderBar());
+            const body = new Gtk.ScrolledWindow({
+                hexpand: true,
+                vexpand: true,
+                hscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
+                vscrollbar_policy: Gtk.PolicyType.AUTOMATIC,
+            });
+            body.set_child(makeTextView());
+            toolbar.set_content(body);
+
+            const bar = new Gtk.Label({
+                label: lastStatus[0],
+                xalign: 0,
+                wrap: true,
+                margin_top: 6,
+                margin_bottom: 6,
+                margin_start: 12,
+                margin_end: 12,
+            });
+            bar.add_css_class('dim-label');
+            toolbar.add_bottom_bar(bar);
+            const listener = (msg, error) => {
+                bar.label = msg;
+                if (error)
+                    bar.add_css_class('error');
+                else
+                    bar.remove_css_class('error');
+            };
+            statusListeners.push(listener);
+            big.connect('close-request', () => {
+                const i = statusListeners.indexOf(listener);
+                if (i >= 0)
+                    statusListeners.splice(i, 1);
+                return false;
+            });
+
+            const keys = new Gtk.EventControllerKey();
+            keys.connect('key-pressed', (_c, keyval) => {
+                if (keyval !== Gdk.KEY_Escape)
+                    return Gdk.EVENT_PROPAGATE;
+                big.close();
+                return Gdk.EVENT_STOP;
+            });
+            big.add_controller(keys);
+
+            big.set_content(toolbar);
+            big.present();
+        });
+
+        statusRow.add_suffix(largeButton);
         statusRow.add_suffix(saveButton);
         statusRow.add_suffix(resetButton);
         group.add(statusRow);
+    }
+
+    // Ready-made tables, your own saved ones, and files to share them.
+    // Loading a preset only fills the editor: the editor's own auto-save
+    // stores it, so there is a single path from text to setting.
+    _buildPresetsGroup(page, settings, window, buffer, setStatus) {
+        const group = new Adw.PreferencesGroup({
+            title: _('Presets'),
+            description: _('Start from a ready-made table, keep your own, or share them as files. You can still edit the table afterwards.'),
+        });
+        page.add(group);
+
+        const labels = {
+            all: _('Built-in (all languages)'),
+            french: _('French'),
+            spanish: _('Spanish'),
+            portuguese: _('Portuguese'),
+            italian: _('Italian'),
+            german: _('German'),
+            nordic: _('Nordic (Danish, Norwegian, Swedish, Icelandic)'),
+            polish: _('Polish'),
+            czech: _('Czech and Slovak'),
+            turkish: _('Turkish'),
+            romanian: _('Romanian'),
+            typography: _('Typography, currency and math symbols'),
+        };
+
+        const readUser = () => parseUserPresets(settings.get_string('user-presets'));
+        const writeUser = (map) => settings.set_string('user-presets', JSON.stringify(map));
+
+        // Rows of the list: [{label, table, user: name|null}]
+        let entries = [];
+        const combo = new Adw.ComboRow({
+            title: _('Preset'),
+            subtitle: _('Replaces the table below.'),
+        });
+        const loadButton = new Gtk.Button({label: _('Load'), valign: Gtk.Align.CENTER});
+        loadButton.add_css_class('suggested-action');
+        const deleteButton = new Gtk.Button({
+            icon_name: 'user-trash-symbolic',
+            tooltip_text: _('Delete this saved preset'),
+            valign: Gtk.Align.CENTER,
+            visible: false,
+        });
+        deleteButton.add_css_class('flat');
+        combo.add_suffix(deleteButton);
+        combo.add_suffix(loadButton);
+
+        const rebuild = (selectName = null) => {
+            const user = readUser();
+            entries = BUILTIN_PRESETS.map(p => ({
+                label: labels[p.id] ?? p.id,
+                table: builtinTable(p.id),
+                user: null,
+            }));
+            for (const name of Object.keys(user).sort((a, b) => a.localeCompare(b)))
+                entries.push({label: name, table: user[name], user: name});
+            combo.model = Gtk.StringList.new(entries.map(e => e.user
+                ? `${e.label}  ·  ${_('saved')}` : e.label));
+            const at = selectName === null ? -1 : entries.findIndex(e => e.user === selectName);
+            combo.selected = at >= 0 ? at : 0;
+        };
+
+        const selectedEntry = () => entries[combo.selected] ?? null;
+        combo.connect('notify::selected', () => {
+            deleteButton.visible = !!selectedEntry()?.user;
+        });
+
+        // The table in the editor, or null when it is not valid JSON-table text.
+        const currentTable = () => {
+            const text = buffer.text.trim();
+            return text === '' ? DEFAULT_ACCENTS : parseTable(text);
+        };
+        // Would loading something else throw away work that is saved nowhere?
+        const hasUnsavedWork = () => {
+            const cur = currentTable();
+            if (cur === null)
+                return true;
+            return !entries.some(e => sameTable(e.table, cur));
+        };
+
+        const confirmReplace = (then) => {
+            if (!hasUnsavedWork()) {
+                then();
+                return;
+            }
+            const dialog = new Gtk.AlertDialog({
+                message: _('Replace the current table?'),
+                detail: _('Your edits are not saved as a preset. Export or save them first if you want to keep them.'),
+                buttons: [_('Cancel'), _('Replace')],
+                cancel_button: 0,
+                default_button: 0,
+            });
+            dialog.choose(window, null, (d, res) => {
+                let index = 0;
+                try {
+                    index = d.choose_finish(res);
+                } catch {
+                    return;
+                }
+                if (index === 1)
+                    then();
+            });
+        };
+
+        const apply = (label, table) => {
+            buffer.text = formatTable(table);
+            setStatus(fmt(_('Preset “%s” loaded.'), label), false);
+        };
+
+        loadButton.connect('clicked', () => {
+            const entry = selectedEntry();
+            if (!entry)
+                return;
+            confirmReplace(() => apply(entry.label, entry.table));
+        });
+
+        deleteButton.connect('clicked', () => {
+            const entry = selectedEntry();
+            if (!entry?.user)
+                return;
+            const user = readUser();
+            delete user[entry.user];
+            writeUser(user);
+            rebuild();
+            setStatus(fmt(_('Preset “%s” deleted.'), entry.user), false);
+        });
+
+        group.add(combo);
+
+        // ---- Save the current table under a name --------------------------
+        const nameRow = new Adw.EntryRow({
+            title: _('Save the current table as a preset'),
+            show_apply_button: true,
+        });
+        nameRow.connect('apply', () => {
+            const name = nameRow.text.trim();
+            if (name === '')
+                return;
+            const table = currentTable();
+            if (table === null) {
+                setStatus(_('Not saved: the table below is not valid yet.'), true);
+                return;
+            }
+            const user = readUser();
+            const existed = Object.hasOwn(user, name);
+            user[name] = table;
+            writeUser(user);
+            nameRow.text = '';
+            rebuild(name);
+            setStatus(existed
+                ? fmt(_('Preset “%s” updated.'), name)
+                : fmt(_('Preset “%s” saved.'), name), false);
+        });
+        group.add(nameRow);
+
+        // ---- Files --------------------------------------------------------
+        const fileRow = new Adw.ActionRow({
+            title: _('Share'),
+            subtitle: _('A preset file is plain JSON: send it, or import one someone sent you.'),
+        });
+        const importButton = new Gtk.Button({label: _('Import…'), valign: Gtk.Align.CENTER});
+        const exportButton = new Gtk.Button({label: _('Export…'), valign: Gtk.Align.CENTER});
+        fileRow.add_suffix(importButton);
+        fileRow.add_suffix(exportButton);
+        group.add(fileRow);
+
+        const jsonFilter = () => {
+            const filters = new Gio.ListStore({item_type: Gtk.FileFilter});
+            const f = new Gtk.FileFilter({name: 'JSON'});
+            f.add_suffix('json');
+            f.add_mime_type('application/json');
+            filters.append(f);
+            return filters;
+        };
+
+        importButton.connect('clicked', () => {
+            const dialog = new Gtk.FileDialog({
+                title: _('Import a preset'),
+                filters: jsonFilter(),
+            });
+            dialog.open(window, null, (d, res) => {
+                let file;
+                try {
+                    file = d.open_finish(res);
+                } catch {
+                    return; // cancelled
+                }
+                file.load_contents_async(null, (f, loadRes) => {
+                    let bytes;
+                    try {
+                        [, bytes] = f.load_contents_finish(loadRes);
+                    } catch (e) {
+                        setStatus(_('Could not read the file.'), true);
+                        return;
+                    }
+                    const parsed = parsePresetFile(new TextDecoder().decode(bytes));
+                    if (parsed === null) {
+                        setStatus(_('Not a preset: expected {"name": "…", "accents": {"e": ["é"], …}} or a plain table.'), true);
+                        return;
+                    }
+                    const fallback = (f.get_basename() ?? '').replace(/\.json$/i, '');
+                    const name = parsed.name || fallback || _('Imported preset');
+                    const user = readUser();
+                    user[name] = parsed.table;
+                    writeUser(user);
+                    rebuild(name);
+                    confirmReplace(() => apply(name, parsed.table));
+                });
+            });
+        });
+
+        exportButton.connect('clicked', () => {
+            const table = currentTable();
+            if (table === null) {
+                setStatus(_('Nothing exported: the table below is not valid yet.'), true);
+                return;
+            }
+            const entry = selectedEntry();
+            const typed = nameRow.text.trim();
+            const name = typed || (entry && sameTable(entry.table, table) ? entry.label : _('My accents'));
+            const dialog = new Gtk.FileDialog({
+                title: _('Export the table'),
+                initial_name: `${name.replace(/[\\/:*?"<>|]/g, '-')}.json`,
+                filters: jsonFilter(),
+            });
+            dialog.save(window, null, (d, res) => {
+                let file;
+                try {
+                    file = d.save_finish(res);
+                } catch {
+                    return; // cancelled
+                }
+                const data = new TextEncoder().encode(serializePreset(name, table));
+                file.replace_contents_bytes_async(new GLib.Bytes(data), null, false,
+                    Gio.FileCreateFlags.REPLACE_DESTINATION, null, (f, writeRes) => {
+                        try {
+                            f.replace_contents_finish(writeRes);
+                            setStatus(fmt(_('Exported to %s.'), f.get_path() ?? f.get_uri()), false);
+                        } catch (e) {
+                            setStatus(_('Could not write the file.'), true);
+                        }
+                    });
+            });
+        });
+
+        const changedId = settings.connect('changed::user-presets', () => rebuild(selectedEntry()?.user ?? null));
+        disconnectOnDestroy(group, settings, changedId);
+
+        rebuild();
     }
 
     _buildLayoutsGroup(page, settings) {

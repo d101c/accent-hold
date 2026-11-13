@@ -23,6 +23,16 @@ export function parseTable(json) {
     return table;
 }
 
+// Readable JSON for the editor: one line per base character,
+//   "e": ["é", "è", "ê"],
+// instead of JSON.stringify's one line per variant, which turns the default
+// table into 150 lines. Still plain JSON, so parseTable reads it back.
+export function formatTable(table) {
+    const lines = Object.entries(table).map(([base, variants]) =>
+        `  ${JSON.stringify(base)}: [${variants.map(v => JSON.stringify(v)).join(', ')}]`);
+    return lines.length ? `{\n${lines.join(',\n')}\n}` : '{}';
+}
+
 export const DEFAULT_ACCENTS = {
     'a': ['à', 'á', 'â', 'ä', 'æ', 'ã', 'å', 'ā'],
     'A': ['À', 'Á', 'Â', 'Ä', 'Æ', 'Ã', 'Å', 'Ā'],

@@ -36,9 +36,11 @@ fi
 gnome-extensions pack "$SRC" \
   --extra-source=accentPicker.js \
   --extra-source=defaultAccents.js \
+  --extra-source=chipContent.js \
   --extra-source=holdMachine.js \
   --extra-source=imPatch.js \
   --extra-source=placement.js \
+  --extra-source=presets.js \
   --extra-source=pressHold.js \
   --extra-source=panelIndicator.js \
   --extra-source=pasteInsert.js \

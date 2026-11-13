@@ -110,6 +110,9 @@ Panneau de configuration intégré (icône réglages dans l'app *Extensions*, ou
 - **Appui long** : activer ou non (`press-and-hold`), durée d'appui
   (`hold-ms`, 400 ms par défaut), et choix de la variante surlignée en
   relâchant la lettre (`pick-on-release`, désactivé par défaut).
+- **Numéros sous les caractères** : affiche le numéro de chaque variante sur
+  une ligne sous son caractère, comme sur la capture (`numbers-below`,
+  activé par défaut) ; désactivez-le pour le placer à côté (`1 é`).
 - **Raccourci** : la touche qui ouvre le sélecteur (`accent-hold-shortcut`,
   défaut `Super+E` ; un modificateur ou une touche de fonction est exigé),
   et son interrupteur (`enabled`, qui ne concerne que le raccourci).
@@ -117,8 +120,19 @@ Panneau de configuration intégré (icône réglages dans l'app *Extensions*, ou
   (`delay-ms`, 0–1000 ; sans effet sur l'appui long).
 - **Fermeture automatique** : garde-fou après lequel toute fenêtre se ferme
   (`popup-timeout-ms`).
+- **Préréglages** : des tables toutes faites (français, espagnol, portugais,
+  italien, allemand, nordique, polonais, tchèque et slovaque, turc, roumain,
+  typographie et monnaies) à charger en un clic, vos propres tables
+  enregistrées sous un nom (`user-presets`), et import / export en fichier
+  JSON simple pour les partager :
+  `{"name": "Norvégien", "accents": {"a": ["å", "æ"], "o": ["ø"]}}`. Une
+  table seule est acceptée aussi. Charger un préréglage ne fait que remplir
+  l'éditeur ci-dessous : vous pouvez l'ajuster ensuite ; si vos modifications
+  ne sont enregistrées nulle part, on vous demande avant de les remplacer.
 - **Caractères** : table des variantes (`accents`, JSON : un objet qui
-  associe une lettre à une liste de variantes ; mal formé = table intégrée).
+  associe une lettre à une liste de variantes ; mal formé = table intégrée),
+  une ligne par lettre, avec un bouton pour la modifier dans une fenêtre plus
+  grande.
 - **Claviers** : dispositions xkb où l'appui long et le raccourci sont actifs
   (`layouts`, vide = toutes).
 - **Icône dans la barre du haut** : une icône dont le menu met toute
