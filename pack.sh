@@ -41,6 +41,7 @@ gnome-extensions pack "$SRC" \
   --extra-source=placement.js \
   --extra-source=pressHold.js \
   --extra-source=panelIndicator.js \
+  --extra-source=pasteInsert.js \
   --podir=po \
   --gettext-domain="$DOMAIN" \
   --schema="$SCHEMA" \
