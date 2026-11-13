@@ -31,14 +31,21 @@ Anything else keeps the plain letter: `Esc`, `Space`, or just typing on.
 
 ## Where it works
 
-Both gestures go through the GNOME input method, so they work in
-applications that use it on Wayland: GTK 3 and GTK 4 applications and VTE
-terminals (GNOME Console, Ptyxis, GNOME Terminal) are what the author uses
-and tests. Firefox, Electron applications running with their Wayland
-backend and recent Qt 6 applications (checked with Qt 6.11) speak the same
-protocol but have not been tested as thoroughly. Qt 5 applications bring
-their own IBus client and bypass it, and XWayland applications are not
-covered: there, use the shortcut. The extension does nothing on X11 sessions.
+Press and hold goes through the GNOME input method, so it works in
+applications that use it on Wayland: GTK 3 and GTK 4 applications, VTE
+terminals (GNOME Console, Ptyxis, GNOME Terminal), Firefox and Thunderbird,
+Chromium and Electron applications running with their Wayland backend, and
+recent Qt 6 applications, Qt WebEngine included (checked with Qt 6.11 and
+6.12).
+
+Applications that do not use it never show the press-and-hold popup: Qt 5
+applications (they bring their own IBus client) and XWayland applications,
+which is how many Electron applications still run (Teams, for one).
+There, use the shortcut: when the focused application has no input method,
+the picker pastes the chosen character (clipboard, `Shift+Insert`) and puts
+the previous clipboard content back right after. An Electron application
+started with `--ozone-platform=wayland` gets press and hold too. The
+extension does nothing on X11 sessions.
 
 The popup opens below the text cursor when the application reports it
 (GTK does), otherwise below the mouse pointer, and always inside the
@@ -153,7 +160,8 @@ holding `e` after `´` replaces the composed `é`. In a terminal application
 with modes (vim), the BackSpace goes to the application like any key.
 
 The shortcut picker takes a modal grab for the letter and the choice, then
-commits the character through the same input method. The old evdev daemon
+commits the character through the same input method, or pastes it when the
+application has none (see above). The old evdev daemon
 variant is archived in [`legacy/`](legacy/).
 
 ## Zero-install alternative: the Compose key
