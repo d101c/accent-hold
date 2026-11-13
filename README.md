@@ -108,7 +108,7 @@ Built-in settings panel (the settings icon in the *Extensions* app, or
   be held (`hold-ms`, default 400 ms), and whether releasing it picks the
   highlighted variant (`pick-on-release`, off by default).
 - **Numbers below the characters** — shows each variant's number in a row
-  under its character instead of beside it (`numbers-below`, off by default).
+  under its character, as in the screenshot (`numbers-below`, on by default); turn it off to put it beside the character (`1 é`).
 - **Shortcut** — the key that opens the picker (`accent-hold-shortcut`,
   default `Super+E`; a modifier or a function key is required), and its
   on/off switch (`enabled`, which only affects the shortcut).
