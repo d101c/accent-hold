@@ -23,6 +23,17 @@
 Anything else keeps the plain letter: `Esc`, `Space`, or just typing on.
 `E` (with Shift) offers `É È Ê Ë …`.
 
+**Ways to pick a variant.** The default is the macOS one: the variants stay
+open after you let go of the letter, and `Enter`, a number or a click picks.
+Other ways are options in the preferences, off by default, so nothing changes
+unless you turn them on:
+
+- **Pick on release** (*Press and hold*): the variants open with nothing
+  highlighted; `←`/`→` (or `Tab`) highlight one while you keep the letter
+  held, and letting go of the letter picks it. Letting go without moving
+  keeps the plain letter. A number still picks while the letter is held. The
+  variants close on release, so the mouse is not used in this mode.
+
 **Shortcut**, when you would rather not hold:
 
 1. `Super+E` (configurable)
