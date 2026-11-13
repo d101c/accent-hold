@@ -117,8 +117,19 @@ Panneau de configuration intégré (icône réglages dans l'app *Extensions*, ou
   (`delay-ms`, 0–1000 ; sans effet sur l'appui long).
 - **Fermeture automatique** : garde-fou après lequel toute fenêtre se ferme
   (`popup-timeout-ms`).
+- **Préréglages** : des tables toutes faites (français, espagnol, portugais,
+  italien, allemand, nordique, polonais, tchèque et slovaque, turc, roumain,
+  typographie et monnaies) à charger en un clic, vos propres tables
+  enregistrées sous un nom (`user-presets`), et import / export en fichier
+  JSON simple pour les partager :
+  `{"name": "Norvégien", "accents": {"a": ["å", "æ"], "o": ["ø"]}}`. Une
+  table seule est acceptée aussi. Charger un préréglage ne fait que remplir
+  l'éditeur ci-dessous : vous pouvez l'ajuster ensuite ; si vos modifications
+  ne sont enregistrées nulle part, on vous demande avant de les remplacer.
 - **Caractères** : table des variantes (`accents`, JSON : un objet qui
-  associe une lettre à une liste de variantes ; mal formé = table intégrée).
+  associe une lettre à une liste de variantes ; mal formé = table intégrée),
+  une ligne par lettre, avec un bouton pour la modifier dans une fenêtre plus
+  grande.
 - **Claviers** : dispositions xkb où l'appui long et le raccourci sont actifs
   (`layouts`, vide = toutes).
 - **Icône dans la barre du haut** : une icône dont le menu met toute

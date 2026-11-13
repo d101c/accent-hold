@@ -113,8 +113,17 @@ Built-in settings panel (the settings icon in the *Extensions* app, or
 - **Delay (ms)** — latency before the shortcut picker appears (`delay-ms`,
   0–1000; does not apply to press and hold).
 - **Auto-close** — failsafe after which any popup closes (`popup-timeout-ms`).
+- **Presets** — ready-made tables (French, Spanish, Portuguese, Italian,
+  German, Nordic, Polish, Czech and Slovak, Turkish, Romanian, typography and
+  currency symbols) to load in one click, your own tables saved under a name
+  (`user-presets`), and import / export as a plain JSON file to share them:
+  `{"name": "Norwegian", "accents": {"a": ["å", "æ"], "o": ["ø"]}}`. A bare
+  table is accepted too. Loading a preset only fills the editor below, so you
+  can adjust it afterwards; if your edits are saved nowhere, you are asked
+  before they are replaced.
 - **Characters** — table of accented variants (`accents`, JSON: an object
-  mapping a letter to a list of variants; malformed = built-in table).
+  mapping a letter to a list of variants; malformed = built-in table), one
+  line per letter, with a button to edit it in a larger window.
 - **Keyboards** — xkb layouts where press and hold and the shortcut are
   active (`layouts`, empty = all).
 - **Top bar icon** — an icon whose menu pauses the whole extension, opens

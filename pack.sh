@@ -39,6 +39,7 @@ gnome-extensions pack "$SRC" \
   --extra-source=holdMachine.js \
   --extra-source=imPatch.js \
   --extra-source=placement.js \
+  --extra-source=presets.js \
   --extra-source=pressHold.js \
   --extra-source=panelIndicator.js \
   --extra-source=pasteInsert.js \

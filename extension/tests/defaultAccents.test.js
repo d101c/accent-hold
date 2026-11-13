@@ -1,6 +1,6 @@
 // Run: gjs -m extension/tests/defaultAccents.test.js
 import System from 'system';
-import {DEFAULT_ACCENTS, parseTable} from '../defaultAccents.js';
+import {DEFAULT_ACCENTS, formatTable, parseTable} from '../defaultAccents.js';
 
 let failures = 0;
 function test(name, fn) {
@@ -38,6 +38,15 @@ test('malformed overrides are rejected', () => {
     check(parseTable('{"e": ["é", 1]}') === null, 'number candidate');
     check(parseTable('{"e": ["é", ""]}') === null, 'empty candidate');
     check(parseTable('{"": ["é"]}') === null, 'empty base');
+});
+
+test('formatTable gives one line per base and reads back identically', () => {
+    const text = formatTable(DEFAULT_ACCENTS);
+    check(text.split('\n').length === Object.keys(DEFAULT_ACCENTS).length + 2, 'one line per letter');
+    const back = parseTable(text);
+    check(back !== null && JSON.stringify(back) === JSON.stringify(DEFAULT_ACCENTS), 'round trip');
+    check(formatTable({}) === '{}', 'empty table');
+    check(parseTable(formatTable({'"': ['«'], '\\': ['/']})) !== null, 'quotes and backslashes survive');
 });
 
 if (failures)
