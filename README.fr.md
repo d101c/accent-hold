@@ -23,6 +23,18 @@
 Tout le reste garde la lettre simple : `Échap`, `Espace`, ou simplement
 continuer à taper. `E` (avec Maj) propose `É È Ê Ë …`.
 
+**Façons de choisir une variante.** Par défaut, c'est celle de macOS : les
+variantes restent ouvertes quand on relâche la lettre, et `Entrée`, un chiffre
+ou un clic choisit. Les autres façons sont des options des préférences,
+désactivées par défaut : rien ne change tant qu'on ne les active pas.
+
+- **Choisir au relâchement** (*Appui long*) : les variantes s'ouvrent sans
+  rien de surligné ; `←`/`→` (ou `Tab`) en surlignent une pendant qu'on
+  garde la lettre enfoncée, et relâcher la lettre la choisit. Relâcher sans
+  avoir bougé garde la lettre simple. Un chiffre choisit toujours pendant
+  que la lettre est tenue. Les variantes se ferment au relâchement : la
+  souris ne sert pas dans ce mode.
+
 **Raccourci**, quand on préfère ne pas maintenir :
 
 1. `Super+E` (configurable)
