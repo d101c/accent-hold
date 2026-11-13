@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: accent-hold\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 19:16+0100\n"
+"POT-Creation-Date: 2026-11-13 19:18+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: accentPicker.js:99
+#: accentPicker.js:100
 msgid "Type a letter…"
 msgstr ""
 
@@ -25,7 +25,7 @@ msgstr ""
 msgid "Accent Hold"
 msgstr ""
 
-#: panelIndicator.js:28 prefs.js:93 prefs.js:131
+#: panelIndicator.js:28 prefs.js:93 prefs.js:139
 msgid "Enabled"
 msgstr ""
 
@@ -118,323 +118,331 @@ msgid "Works in applications that support the GNOME input method."
 msgstr ""
 
 #: prefs.js:101
-msgid "Hold duration"
+msgid "Numbers below the characters"
 msgstr ""
 
 #: prefs.js:102
+msgid "Show each number in a row under its character instead of beside it."
+msgstr ""
+
+#: prefs.js:109
+msgid "Hold duration"
+msgstr ""
+
+#: prefs.js:110
 msgid "Milliseconds a letter must be held."
 msgstr ""
 
-#: prefs.js:115
+#: prefs.js:123
 msgid "Pick on release"
 msgstr ""
 
-#: prefs.js:116
+#: prefs.js:124
 msgid "Releasing the letter picks the highlighted variant."
 msgstr ""
 
-#: prefs.js:125
+#: prefs.js:133
 msgid "Shortcut"
 msgstr ""
 
-#: prefs.js:126
+#: prefs.js:134
 msgid "Key that triggers the accent picker."
 msgstr ""
 
-#: prefs.js:132
+#: prefs.js:140
 msgid "Enable or disable the shortcut."
 msgstr ""
 
-#: prefs.js:139
+#: prefs.js:147
 msgid "Click the button, then press the combination."
 msgstr ""
 
-#: prefs.js:141
+#: prefs.js:149
 msgid "Combination"
 msgstr ""
 
-#: prefs.js:151
+#: prefs.js:159
 msgid "Use a modifier (Ctrl, Alt, Super…) or a function key."
 msgstr ""
 
-#: prefs.js:160
+#: prefs.js:168
 msgid "Disabled"
 msgstr ""
 
-#: prefs.js:182
+#: prefs.js:190
 msgid "Press a key…"
 msgstr ""
 
-#: prefs.js:227
+#: prefs.js:235
 msgid "Accelerator (text)"
 msgstr ""
 
-#: prefs.js:284
+#: prefs.js:292
 msgid "Behavior"
 msgstr ""
 
-#: prefs.js:289
+#: prefs.js:297
 msgid "Delay before display"
 msgstr ""
 
-#: prefs.js:290
+#: prefs.js:298
 msgid ""
 "Milliseconds before the shortcut picker appears (press and hold is not "
 "delayed)."
 msgstr ""
 
-#: prefs.js:303
+#: prefs.js:311
 msgid "Auto-close (failsafe)"
 msgstr ""
 
-#: prefs.js:304
+#: prefs.js:312
 msgid "Milliseconds before automatic close."
 msgstr ""
 
-#: prefs.js:317
+#: prefs.js:325
 msgid "Top bar icon"
 msgstr ""
 
-#: prefs.js:318
+#: prefs.js:326
 msgid ""
 "Show an icon with a quick on/off switch and a link to these settings. Bring "
 "it back here after hiding it from its menu."
 msgstr ""
 
-#: prefs.js:337
+#: prefs.js:345
 msgid "Modified = saved automatically."
 msgstr ""
 
-#: prefs.js:349 prefs.js:451
+#: prefs.js:357 prefs.js:459
 msgid "Accentable characters"
 msgstr ""
 
-#: prefs.js:350
+#: prefs.js:358
 msgid "JSON table: base letter → list of accented variants."
 msgstr ""
 
-#: prefs.js:387
+#: prefs.js:395
 msgid "Save"
 msgstr ""
 
-#: prefs.js:391
+#: prefs.js:399
 msgid "Reset"
 msgstr ""
 
-#: prefs.js:397
+#: prefs.js:405
 msgid "Edit in a larger window"
 msgstr ""
 
-#: prefs.js:406
+#: prefs.js:414
 msgid "Built-in default table active."
 msgstr ""
 
-#: prefs.js:410
+#: prefs.js:418
 msgid ""
 "Not saved: expected {\"e\": [\"é\", \"è\"], …} — an object of string lists."
 msgstr ""
 
-#: prefs.js:414
+#: prefs.js:422
 msgid "Saved."
 msgstr ""
 
-#: prefs.js:444
+#: prefs.js:452
 msgid "Reset to the built-in table."
 msgstr ""
 
-#: prefs.js:518
+#: prefs.js:526
 msgid "Presets"
 msgstr ""
 
-#: prefs.js:519
+#: prefs.js:527
 msgid ""
 "Start from a ready-made table, keep your own, or share them as files. You "
 "can still edit the table afterwards."
 msgstr ""
 
-#: prefs.js:524
+#: prefs.js:532
 msgid "Built-in (all languages)"
 msgstr ""
 
-#: prefs.js:525
+#: prefs.js:533
 msgid "French"
 msgstr ""
 
-#: prefs.js:526
+#: prefs.js:534
 msgid "Spanish"
 msgstr ""
 
-#: prefs.js:527
+#: prefs.js:535
 msgid "Portuguese"
 msgstr ""
 
-#: prefs.js:528
+#: prefs.js:536
 msgid "Italian"
 msgstr ""
 
-#: prefs.js:529
+#: prefs.js:537
 msgid "German"
 msgstr ""
 
-#: prefs.js:530
+#: prefs.js:538
 msgid "Nordic (Danish, Norwegian, Swedish, Icelandic)"
 msgstr ""
 
-#: prefs.js:531
+#: prefs.js:539
 msgid "Polish"
 msgstr ""
 
-#: prefs.js:532
+#: prefs.js:540
 msgid "Czech and Slovak"
 msgstr ""
 
-#: prefs.js:533
+#: prefs.js:541
 msgid "Turkish"
 msgstr ""
 
-#: prefs.js:534
+#: prefs.js:542
 msgid "Romanian"
 msgstr ""
 
-#: prefs.js:535
+#: prefs.js:543
 msgid "Typography, currency and math symbols"
 msgstr ""
 
-#: prefs.js:544
+#: prefs.js:552
 msgid "Preset"
 msgstr ""
 
-#: prefs.js:545
+#: prefs.js:553
 msgid "Replaces the table below."
 msgstr ""
 
-#: prefs.js:547
+#: prefs.js:555
 msgid "Load"
 msgstr ""
 
-#: prefs.js:551
+#: prefs.js:559
 msgid "Delete this saved preset"
 msgstr ""
 
-#: prefs.js:569
+#: prefs.js:577
 msgid "saved"
 msgstr ""
 
-#: prefs.js:598
+#: prefs.js:606
 msgid "Replace the current table?"
 msgstr ""
 
-#: prefs.js:599
+#: prefs.js:607
 msgid ""
 "Your edits are not saved as a preset. Export or save them first if you want "
 "to keep them."
 msgstr ""
 
-#: prefs.js:600
+#: prefs.js:608
 msgid "Cancel"
 msgstr ""
 
-#: prefs.js:600
+#: prefs.js:608
 msgid "Replace"
 msgstr ""
 
-#: prefs.js:618
+#: prefs.js:626
 #, javascript-format
 msgid "Preset “%s” loaded."
 msgstr ""
 
-#: prefs.js:636
+#: prefs.js:644
 #, javascript-format
 msgid "Preset “%s” deleted."
 msgstr ""
 
-#: prefs.js:643
+#: prefs.js:651
 msgid "Save the current table as a preset"
 msgstr ""
 
-#: prefs.js:652
+#: prefs.js:660
 msgid "Not saved: the table below is not valid yet."
 msgstr ""
 
-#: prefs.js:662
+#: prefs.js:670
 #, javascript-format
 msgid "Preset “%s” updated."
 msgstr ""
 
-#: prefs.js:663
+#: prefs.js:671
 #, javascript-format
 msgid "Preset “%s” saved."
 msgstr ""
 
-#: prefs.js:669
+#: prefs.js:677
 msgid "Share"
 msgstr ""
 
-#: prefs.js:670
+#: prefs.js:678
 msgid "A preset file is plain JSON: send it, or import one someone sent you."
 msgstr ""
 
-#: prefs.js:672
+#: prefs.js:680
 msgid "Import…"
 msgstr ""
 
-#: prefs.js:673
+#: prefs.js:681
 msgid "Export…"
 msgstr ""
 
-#: prefs.js:689
+#: prefs.js:697
 msgid "Import a preset"
 msgstr ""
 
-#: prefs.js:704
+#: prefs.js:712
 msgid "Could not read the file."
 msgstr ""
 
-#: prefs.js:709
+#: prefs.js:717
 msgid ""
 "Not a preset: expected {\"name\": \"…\", \"accents\": {\"e\": [\"é\"], …}} "
 "or a plain table."
 msgstr ""
 
-#: prefs.js:713
+#: prefs.js:721
 msgid "Imported preset"
 msgstr ""
 
-#: prefs.js:726
+#: prefs.js:734
 msgid "Nothing exported: the table below is not valid yet."
 msgstr ""
 
-#: prefs.js:731
+#: prefs.js:739
 msgid "My accents"
 msgstr ""
 
-#: prefs.js:733
+#: prefs.js:741
 msgid "Export the table"
 msgstr ""
 
-#: prefs.js:749
+#: prefs.js:757
 #, javascript-format
 msgid "Exported to %s."
 msgstr ""
 
-#: prefs.js:751
+#: prefs.js:759
 msgid "Could not write the file."
 msgstr ""
 
-#: prefs.js:765
+#: prefs.js:773
 msgid "Keyboards"
 msgstr ""
 
-#: prefs.js:766
+#: prefs.js:774
 msgid ""
 "Layouts where press and hold and the shortcut are active (none checked = all "
 "active)."
 msgstr ""
 
-#: prefs.js:789
+#: prefs.js:797
 msgid "No xkb layout detected"
 msgstr ""
 
-#: prefs.js:790
+#: prefs.js:798
 msgid "Accent Hold is active on all keyboards."
 msgstr ""

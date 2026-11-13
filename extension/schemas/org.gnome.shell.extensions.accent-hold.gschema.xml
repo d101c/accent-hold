@@ -50,6 +50,11 @@
       <summary>Accent table (JSON)</summary>
       <description>Optional JSON overriding the built-in table: an object mapping a letter to a list of variants. Empty or malformed = built-in table.</description>
     </key>
+    <key name="numbers-below" type="b">
+      <default>false</default>
+      <summary>Numbers below the characters</summary>
+      <description>Show each variant's number in a row under its character instead of beside it.</description>
+    </key>
     <key name="user-presets" type="s">
       <default>'{}'</default>
       <summary>Saved accent presets (JSON)</summary>

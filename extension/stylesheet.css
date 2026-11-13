@@ -18,3 +18,18 @@
     font-size: 14px;
     color: #ddd;
 }
+
+.accent-chip-below {
+    padding: 6px 12px;
+}
+.accent-chip-char {
+    font-size: 18px;
+    color: #fff;
+}
+.accent-chip-number {
+    font-size: 11px;
+    color: #bbb;
+}
+.accent-chip-below:selected .accent-chip-number {
+    color: #fff;
+}

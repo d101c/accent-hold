@@ -5,6 +5,7 @@ import St from 'gi://St';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import * as KeyboardStatus from 'resource:///org/gnome/shell/ui/status/keyboard.js';
 import {monitorAt, clampToMonitor} from './placement.js';
+import {fillChip} from './chipContent.js';
 import {PasteInsert} from './pasteInsert.js';
 
 // Accent picker opened by a keyboard shortcut. Two phases: first wait for a base
@@ -194,12 +195,13 @@ export class AccentPicker {
             this._hint = null;
         }
 
+        const below = this._settings.get_boolean('numbers-below');
         this._chips = this._variants.map((v, i) => {
             const chip = new St.Button({
                 style_class: 'accent-chip',
-                label: `${i + 1} ${v}`,
                 can_focus: false,
             });
+            fillChip(chip, below, i + 1, v);
             chip.connectObject('clicked', () => this._choose(i), this);
             this._actor.add_child(chip);
             return chip;

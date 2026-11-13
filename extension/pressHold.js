@@ -7,6 +7,7 @@ import * as KeyboardStatus from 'resource:///org/gnome/shell/ui/status/keyboard.
 import {HoldMachine, describeKey, surroundingRun, deletableCount} from './holdMachine.js';
 import {installKeyFilter} from './imPatch.js';
 import {monitorAt, clampToMonitor, anchorPoint} from './placement.js';
+import {fillChip} from './chipContent.js';
 
 // Press-and-hold without an input method engine.
 //
@@ -169,12 +170,13 @@ export class PressHold {
     _show(candidates, index) {
         this._hide();
         this._popup = new St.BoxLayout({style_class: 'accent-popup', reactive: true});
+        const below = this._settings.get_boolean('numbers-below');
         this._chips = candidates.map((text, i) => {
             const chip = new St.Button({
                 style_class: 'accent-chip',
-                label: `${i + 1} ${text}`,
                 can_focus: false,
             });
+            fillChip(chip, below, i + 1, text);
             chip.connect('clicked', () => this._run(this._machine.candidateClicked(i)));
             this._popup.add_child(chip);
             return chip;

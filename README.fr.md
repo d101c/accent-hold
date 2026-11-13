@@ -110,6 +110,9 @@ Panneau de configuration intégré (icône réglages dans l'app *Extensions*, ou
 - **Appui long** : activer ou non (`press-and-hold`), durée d'appui
   (`hold-ms`, 400 ms par défaut), et choix de la variante surlignée en
   relâchant la lettre (`pick-on-release`, désactivé par défaut).
+- **Numéros sous les caractères** : affiche le numéro de chaque variante sur
+  une ligne sous son caractère plutôt qu'à côté (`numbers-below`, désactivé
+  par défaut).
 - **Raccourci** : la touche qui ouvre le sélecteur (`accent-hold-shortcut`,
   défaut `Super+E` ; un modificateur ou une touche de fonction est exigé),
   et son interrupteur (`enabled`, qui ne concerne que le raccourci).

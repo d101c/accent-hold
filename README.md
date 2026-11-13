@@ -107,6 +107,8 @@ Built-in settings panel (the settings icon in the *Extensions* app, or
 - **Press and hold** — on/off (`press-and-hold`), how long a letter must
   be held (`hold-ms`, default 400 ms), and whether releasing it picks the
   highlighted variant (`pick-on-release`, off by default).
+- **Numbers below the characters** — shows each variant's number in a row
+  under its character instead of beside it (`numbers-below`, off by default).
 - **Shortcut** — the key that opens the picker (`accent-hold-shortcut`,
   default `Super+E`; a modifier or a function key is required), and its
   on/off switch (`enabled`, which only affects the shortcut).

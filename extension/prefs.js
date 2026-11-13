@@ -97,6 +97,14 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         settings.bind('press-and-hold', holdRow, 'active',
             Gio.SettingsBindFlags.DEFAULT);
 
+        const belowRow = new Adw.SwitchRow({
+            title: _('Numbers below the characters'),
+            subtitle: _('Show each number in a row under its character instead of beside it.'),
+        });
+        group.add(belowRow);
+        settings.bind('numbers-below', belowRow, 'active',
+            Gio.SettingsBindFlags.DEFAULT);
+
         const durationRow = new Adw.SpinRow({
             title: _('Hold duration'),
             subtitle: _('Milliseconds a letter must be held.'),
