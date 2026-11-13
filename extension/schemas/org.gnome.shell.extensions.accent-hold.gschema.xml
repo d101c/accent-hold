@@ -28,6 +28,11 @@
       <summary>Hold duration</summary>
       <description>How long in milliseconds a letter must be held to show its variants.</description>
     </key>
+    <key name="pick-on-release" type="b">
+      <default>false</default>
+      <summary>Pick on release</summary>
+      <description>Releasing the held letter picks the highlighted variant.</description>
+    </key>
     <key name="delay-ms" type="i">
       <default>0</default>
       <range min="0" max="1000"/>

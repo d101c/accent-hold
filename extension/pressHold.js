@@ -26,7 +26,8 @@ const BACKSPACE_EVCODE = 14;
 export class PressHold {
     constructor(settings, getTable) {
         this._settings = settings;
-        this._machine = new HoldMachine(getTable);
+        this._machine = new HoldMachine(getTable,
+            () => this._settings.get_boolean('pick-on-release'));
         this._popup = null;
         this._chips = [];
         this._holdId = 0;

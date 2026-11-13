@@ -130,8 +130,9 @@ function digitIndex(key) {
 //   ['hide']                        hide the variants
 //   ['replace', base, text]         replace the inserted `base` with `text`
 export class HoldMachine {
-    constructor(getTable) {
+    constructor(getTable, pickOnRelease = () => false) {
         this._getTable = getTable;
+        this._pickOnRelease = pickOnRelease;
         // Keys whose press was swallowed and that are still down: their
         // repeats and release are swallowed too, whatever the state, so the
         // application never sees a release without its press.
@@ -155,7 +156,7 @@ export class HoldMachine {
             result = this._keyIdle(key);
         // The held letter is the exception: its press reached the
         // application, so its release must too.
-        if (result.consumed && !key.release && key.keyval !== held)
+        if (result.consumed && !key.release && key.keycode !== held)
             this._swallowed.add(key.keyval);
         return result;
     }
@@ -170,7 +171,8 @@ export class HoldMachine {
         }
         this.state = OPEN;
         this.candidates = variants.slice(0, MAX_LABELS);
-        this.index = 0;
+        // -1: nothing highlighted, so nothing is picked until the arrows move.
+        this.index = this._pickOnRelease() ? -1 : 0;
         // The press reached the application and its release will not until
         // the user lets go: send a release now so the application stops its
         // own key repeat (clients that repeat on their side).
@@ -199,7 +201,8 @@ export class HoldMachine {
         if (!key.release && !key.shortcut && Array.isArray(variants) && variants.length) {
             this.state = ARMED;
             this.base = key.char;
-            this.held = key.keyval;
+            // By keycode: releasing Shift changes the keyval, not the key.
+            this.held = key.keycode;
             this.heldKey = key;
             return {consumed: false, actions: [['arm', key]]};
         }
@@ -207,7 +210,7 @@ export class HoldMachine {
     }
 
     _keyArmed(key) {
-        if (key.keyval === this.held) {
+        if (key.keycode === this.held) {
             if (key.release) {
                 // Quick tap: the letter is already in the application.
                 this._toIdle();
@@ -224,9 +227,14 @@ export class HoldMachine {
     }
 
     _keyOpen(key) {
-        if (key.keyval === this.held) {
+        if (key.keycode === this.held) {
             if (key.release) {
                 // The press reached the application, so must its release.
+                if (this._pickOnRelease()) {
+                    const actions = this.index >= 0 ? this._choose(this.index) : [['hide']];
+                    this._toIdle();
+                    return {consumed: false, actions};
+                }
                 this.released = true;
                 return {consumed: false, actions: []};
             }
@@ -248,12 +256,12 @@ export class HoldMachine {
         if (NAV_PREV.has(key.name) || NAV_NEXT.has(key.name)) {
             const n = this.candidates.length;
             const step = NAV_PREV.has(key.name) ? -1 : 1;
-            this.index = (this.index + step + n) % n;
+            this.index = this.index < 0 && step < 0 ? n - 1 : (this.index + step + n) % n;
             return {consumed: true, actions: [['move', this.index]]};
         }
-        if (NAV_CONFIRM.has(key.name))
+        if (NAV_CONFIRM.has(key.name) && this.index >= 0)
             return {consumed: true, actions: this._choose(this.index)};
-        if (NAV_DISMISS.has(key.name)) {
+        if (NAV_CONFIRM.has(key.name) || NAV_DISMISS.has(key.name)) {
             this._toIdle();
             return {consumed: false, actions: [['hide']]};
         }

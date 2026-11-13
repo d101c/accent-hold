@@ -102,6 +102,14 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         group.add(durationRow);
         settings.bind('hold-ms', durationRow, 'value',
             Gio.SettingsBindFlags.DEFAULT);
+
+        const releaseRow = new Adw.SwitchRow({
+            title: _('Pick on release'),
+            subtitle: _('Releasing the letter picks the highlighted variant.'),
+        });
+        group.add(releaseRow);
+        settings.bind('pick-on-release', releaseRow, 'active',
+            Gio.SettingsBindFlags.DEFAULT);
     }
 
     _buildShortcutGroup(page, settings) {
