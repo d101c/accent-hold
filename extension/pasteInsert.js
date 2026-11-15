@@ -19,23 +19,31 @@ export class PasteInsert {
         this._device = null;
         this._restoreId = 0;
         this._saved = null;
+        this._saving = false;    // clipboard contents being read
+        this._destroyed = false;
     }
 
     insert(text) {
+        // The clipboard is read asynchronously: a second insert meanwhile
+        // would save our own character as the content to restore.
+        if (this._saving || this._destroyed)
+            return;
         const clipboard = St.Clipboard.get_default();
         // A second insert before the restore keeps the first saved content.
         if (this._restoreId) {
-            GLib.source_remove(this._restoreId);
-            this._restoreId = 0;
             this._paste(clipboard, text);
             return;
         }
+        this._saving = true;
         const saved = [];
         let pending = SELECTIONS.length;
         SELECTIONS.forEach((type, i) => {
             this._save(clipboard, type, content => {
                 saved[i] = content;
                 if (--pending === 0) {
+                    this._saving = false;
+                    if (this._destroyed)
+                        return;
                     this._saved = saved;
                     this._paste(clipboard, text);
                 }
@@ -75,6 +83,11 @@ export class PasteInsert {
         this._device.notify_keyval(time, Clutter.KEY_Insert, RELEASED);
         this._device.notify_keyval(time, Clutter.KEY_Shift_L, RELEASED);
 
+        // Remove the pending timeout before creating a new one.
+        if (this._restoreId) {
+            GLib.source_remove(this._restoreId);
+            this._restoreId = 0;
+        }
         this._restoreId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, RESTORE_DELAY_MS, () => {
             this._restoreId = 0;
             this._restore(clipboard);
@@ -99,6 +112,7 @@ export class PasteInsert {
     }
 
     destroy() {
+        this._destroyed = true;
         if (this._restoreId) {
             GLib.source_remove(this._restoreId);
             this._restoreId = 0;
