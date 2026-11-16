@@ -19,14 +19,13 @@ export class PasteInsert {
         this._device = null;
         this._restoreId = 0;
         this._saved = null;
-        this._saving = false;    // clipboard contents being read
-        this._destroyed = false;
+        this._job = null;        // clipboard contents being read
     }
 
     insert(text) {
         // The clipboard is read asynchronously: a second insert meanwhile
         // would save our own character as the content to restore.
-        if (this._saving || this._destroyed)
+        if (this._job)
             return;
         const clipboard = St.Clipboard.get_default();
         // A second insert before the restore keeps the first saved content.
@@ -34,16 +33,18 @@ export class PasteInsert {
             this._paste(clipboard, text);
             return;
         }
-        this._saving = true;
+        const job = {};
+        this._job = job;
         const saved = [];
         let pending = SELECTIONS.length;
         SELECTIONS.forEach((type, i) => {
             this._save(clipboard, type, content => {
                 saved[i] = content;
                 if (--pending === 0) {
-                    this._saving = false;
-                    if (this._destroyed)
+                    // destroy() drops the job: nothing to do any more.
+                    if (this._job !== job)
                         return;
+                    this._job = null;
                     this._saved = saved;
                     this._paste(clipboard, text);
                 }
@@ -112,7 +113,7 @@ export class PasteInsert {
     }
 
     destroy() {
-        this._destroyed = true;
+        this._job = null;
         if (this._restoreId) {
             GLib.source_remove(this._restoreId);
             this._restoreId = 0;

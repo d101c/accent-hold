@@ -355,6 +355,7 @@ export class AccentPicker {
         this._close();
         this._removeSource('_commitId');
         this._paste.destroy();
+        this._paste = null;
         this._settings = null;
     }
 }
