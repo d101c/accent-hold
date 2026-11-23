@@ -12,7 +12,8 @@ function withCapitals(lower) {
     const table = {};
     for (const [base, variants] of Object.entries(lower)) {
         table[base] = variants;
-        table[base.toUpperCase()] = variants.map(v => v.toUpperCase());
+        // A set: two lowercase forms can share one capital (σ, ς -> Σ).
+        table[base.toUpperCase()] = [...new Set(variants.map(v => v.toUpperCase()))];
     }
     return table;
 }
@@ -67,6 +68,31 @@ export const BUILTIN_PRESETS = [
         '?': ['¿', '‽'],
         '!': ['¡', '‼'],
     }},
+    // Symbols on the keys that look like them. No letters here, so the table
+    // can be added to a language without touching its accents.
+    {id: 'math', table: {
+        '=': ['≠', '≈', '≡', '≅', '∝'],
+        '<': ['≤', '≪', '←', '⇐', '↔', '⇔'],
+        '>': ['≥', '≫', '→', '⇒', '↦'],
+        '+': ['±', '∑', '⊕'],
+        '-': ['−', '∓', '¬'],
+        '*': ['×', '·', '∘', '⊗'],
+        '/': ['÷', '√', '∤'],
+        '|': ['↑', '↓', '↕', '∥'],
+        '(': ['∈', '∉', '⊂', '⊆', '∩'],
+        ')': ['∋', '⊃', '⊇', '∪'],
+        '0': ['∞', '∅', '°'],
+        '~': ['∼', '≃'],
+        '!': ['∀', '∃', '∄'],
+        '.': ['∴', '∵', '…'],
+    }},
+    // Latin key -> the Greek letter usually typed with it.
+    {id: 'greek', table: withCapitals({
+        a: ['α'], b: ['β'], g: ['γ'], d: ['δ'], e: ['ε'], z: ['ζ'], h: ['η'],
+        q: ['θ'], i: ['ι'], k: ['κ'], l: ['λ'], m: ['μ'], n: ['ν'], x: ['ξ'],
+        o: ['ο'], p: ['π'], r: ['ρ'], s: ['σ', 'ς'], t: ['τ'], u: ['υ'],
+        f: ['φ'], c: ['χ'], y: ['ψ'], w: ['ω'],
+    })},
 ];
 
 // Fold the `extra` entries of a built-in preset into its table. Done once, on
@@ -138,6 +164,17 @@ export function parseUserPresets(json) {
         if (ok !== null)
             out[name] = ok;
     }
+    return out;
+}
+
+// `base` with `extra` added to it: the keys and variants of `base` keep their
+// place, the variants it did not have yet come after them, the new keys last.
+export function mergeTables(base, extra) {
+    const out = {};
+    for (const [key, variants] of Object.entries(base))
+        out[key] = [...variants];
+    for (const [key, variants] of Object.entries(extra))
+        out[key] = [...new Set([...(out[key] ?? []), ...variants])];
     return out;
 }
 

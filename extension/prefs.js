@@ -7,7 +7,7 @@ import GLib from 'gi://GLib';
 import {ExtensionPreferences, gettext as _} from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 import {DEFAULT_ACCENTS, formatTable, parseTable} from './defaultAccents.js';
 import {BUILTIN_PRESETS, builtinTable, serializePreset, parsePresetFile,
-    parseUserPresets, sameTable} from './presets.js';
+    parseUserPresets, sameTable, mergeTables} from './presets.js';
 
 const SHORTCUT_KEY = 'accent-hold-shortcut';
 
@@ -540,7 +540,9 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
             czech: _('Czech and Slovak'),
             turkish: _('Turkish'),
             romanian: _('Romanian'),
-            typography: _('Typography, currency and math symbols'),
+            typography: _('Typography and currency'),
+            math: _('Math symbols and arrows'),
+            greek: _('Greek letters'),
         };
 
         const readUser = () => parseUserPresets(settings.get_string('user-presets'));
@@ -550,10 +552,15 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         let entries = [];
         const combo = new Adw.ComboRow({
             title: _('Preset'),
-            subtitle: _('Replaces the table below.'),
+            subtitle: _('Load replaces the table below. Add keeps it and adds the preset to it.'),
         });
         const loadButton = new Gtk.Button({label: _('Load'), valign: Gtk.Align.CENTER});
         loadButton.add_css_class('suggested-action');
+        const addButton = new Gtk.Button({
+            label: _('Add'),
+            tooltip_text: _('Add this preset to the table below'),
+            valign: Gtk.Align.CENTER,
+        });
         const deleteButton = new Gtk.Button({
             icon_name: 'user-trash-symbolic',
             tooltip_text: _('Delete this saved preset'),
@@ -562,6 +569,7 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
         });
         deleteButton.add_css_class('flat');
         combo.add_suffix(deleteButton);
+        combo.add_suffix(addButton);
         combo.add_suffix(loadButton);
 
         const rebuild = (selectName = null) => {
@@ -631,6 +639,20 @@ export default class AccentHoldPreferences extends ExtensionPreferences {
             if (!entry)
                 return;
             confirmReplace(() => apply(entry.label, entry.table));
+        });
+
+        // Nothing is lost by adding, so there is nothing to confirm.
+        addButton.connect('clicked', () => {
+            const entry = selectedEntry();
+            if (!entry)
+                return;
+            const table = currentTable();
+            if (table === null) {
+                setStatus(_('Not added: the table below is not valid yet.'), true);
+                return;
+            }
+            buffer.text = formatTable(mergeTables(table, entry.table));
+            setStatus(fmt(_('Preset “%s” added to the table.'), entry.label), false);
         });
 
         deleteButton.connect('clicked', () => {
