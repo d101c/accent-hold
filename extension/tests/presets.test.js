@@ -2,7 +2,7 @@
 import System from 'system';
 import {parseTable} from '../defaultAccents.js';
 import {BUILTIN_PRESETS, builtinTable, serializePreset, parsePresetFile,
-    parseUserPresets, sameTable} from '../presets.js';
+    parseUserPresets, sameTable, mergeTables} from '../presets.js';
 
 let failures = 0;
 function test(name, fn) {
@@ -72,6 +72,38 @@ test('saved presets: bad entries are dropped one by one', () => {
 test('sameTable ignores key order', () => {
     check(sameTable({a: ['à'], e: ['é']}, {e: ['é'], a: ['à']}), 'order');
     check(!sameTable({a: ['à']}, {a: ['á']}), 'content');
+});
+
+test('mergeTables adds new keys and new variants, keeping the existing order', () => {
+    const base = {e: ['é', 'è'], '=': ['≠']};
+    const out = mergeTables(base, {'=': ['≈', '≠', '≡'], '<': ['≤'], e: ['è', 'ε']});
+    check(Object.keys(out).join('') === 'e=<', `keys ${Object.keys(out)}`);
+    check(out.e.join('') === 'éèε', `e ${out.e}`);
+    check(out['='].join('') === '≠≈≡', `= ${out['=']}`);
+    check(out['<'].join('') === '≤', '<');
+    check(base.e.length === 2 && base['='].length === 1, 'base is left untouched');
+});
+
+test('mergeTables with itself or an empty table changes nothing', () => {
+    const fr = builtinTable('french');
+    check(sameTable(mergeTables(fr, fr), fr), 'itself');
+    check(sameTable(mergeTables(fr, {}), fr), 'empty');
+    check(sameTable(mergeTables({}, fr), fr), 'into empty');
+});
+
+test('math and greek presets', () => {
+    const math = builtinTable('math');
+    check(math['='].includes('≠') && math['='].includes('≈'), 'not equal, almost equal');
+    check(math['<'].includes('←') && math['>'].includes('→'), 'arrows');
+    check(Object.values(math).flat().includes('∈'), 'element of');
+    for (const [base, variants] of Object.entries(math)) {
+        check([...base].length === 1, `base ${base} is one character`);
+        check(new Set(variants).size === variants.length, `duplicate under ${base}`);
+        check(variants.length <= 9, `${base} has more variants than digits`);
+    }
+    const greek = builtinTable('greek');
+    check(greek.p.join('') === 'π' && greek.P.join('') === 'Π', 'pi');
+    check(greek.s.join('') === 'σς' && greek.S.join('') === 'Σ', 'one capital sigma');
 });
 
 System.exit(failures ? 1 : 0);

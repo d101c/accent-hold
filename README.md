@@ -117,12 +117,18 @@ Built-in settings panel (the settings icon in the *Extensions* app, or
 - **Auto-close** — failsafe after which any popup closes (`popup-timeout-ms`).
 - **Presets** — ready-made tables (French, Spanish, Portuguese, Italian,
   German, Nordic, Polish, Czech and Slovak, Turkish, Romanian, typography and
-  currency symbols) to load in one click, your own tables saved under a name
+  currency, math symbols and arrows, Greek letters) to load in one click, or
+  to add to the table you already have, your own tables saved under a name
   (`user-presets`), and import / export as a plain JSON file to share them:
   `{"name": "Norwegian", "accents": {"a": ["å", "æ"], "o": ["ø"]}}`. A bare
   table is accepted too. Loading a preset only fills the editor below, so you
   can adjust it afterwards; if your edits are saved nowhere, you are asked
   before they are replaced.
+- **Not only accents** — the table maps any character to any list of
+  characters. With the math preset added, holding `=` offers ≠ ≈ ≡, `<`
+  offers ≤ ← ⇐, `(` offers ∈ ⊂. A key that is in the table no longer repeats
+  while held (that is how the hold is detected), which is why `-`, `=` and
+  the other symbols are not in the built-in table: add them if you want them.
 - **Characters** — table of accented variants (`accents`, JSON: an object
   mapping a letter to a list of variants; malformed = built-in table), one
   line per letter, with a button to edit it in a larger window.

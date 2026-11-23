@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: accent-hold\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 19:18+0100\n"
+"POT-Creation-Date: 2026-11-23 18:21+0100\n"
 "PO-Revision-Date: 2026-11-13 00:00+0000\n"
 "Last-Translator: Julien Griffit <julien.griffit@gmail.com>\n"
 "Language-Team: French <fr@li.org>\n"
@@ -128,7 +128,8 @@ msgstr "Numéros sous les caractères"
 
 #: prefs.js:102
 msgid "Show each number in a row under its character instead of beside it."
-msgstr "Affiche chaque numéro sur une ligne sous son caractère plutôt qu'à côté."
+msgstr ""
+"Affiche chaque numéro sur une ligne sous son caractère plutôt qu'à côté."
 
 #: prefs.js:109
 msgid "Hold duration"
@@ -319,34 +320,52 @@ msgid "Romanian"
 msgstr "Roumain"
 
 #: prefs.js:543
-msgid "Typography, currency and math symbols"
-msgstr "Typographie, monnaies et symboles mathématiques"
+msgid "Typography and currency"
+msgstr "Typographie et monnaies"
 
-#: prefs.js:552
+#: prefs.js:544
+msgid "Math symbols and arrows"
+msgstr "Symboles mathématiques et flèches"
+
+#: prefs.js:545
+msgid "Greek letters"
+msgstr "Lettres grecques"
+
+#: prefs.js:554
 msgid "Preset"
 msgstr "Préréglage"
 
-#: prefs.js:553
-msgid "Replaces the table below."
-msgstr "Remplace la table ci-dessous."
-
 #: prefs.js:555
+msgid "Load replaces the table below. Add keeps it and adds the preset to it."
+msgstr ""
+"Charger remplace la table ci-dessous. Ajouter la garde et y ajoute le "
+"préréglage."
+
+#: prefs.js:557
 msgid "Load"
 msgstr "Charger"
 
-#: prefs.js:559
+#: prefs.js:560
+msgid "Add"
+msgstr "Ajouter"
+
+#: prefs.js:561
+msgid "Add this preset to the table below"
+msgstr "Ajouter ce préréglage à la table ci-dessous"
+
+#: prefs.js:566
 msgid "Delete this saved preset"
 msgstr "Supprimer ce préréglage enregistré"
 
-#: prefs.js:577
+#: prefs.js:585
 msgid "saved"
 msgstr "enregistré"
 
-#: prefs.js:606
+#: prefs.js:614
 msgid "Replace the current table?"
 msgstr "Remplacer la table actuelle ?"
 
-#: prefs.js:607
+#: prefs.js:615
 msgid ""
 "Your edits are not saved as a preset. Export or save them first if you want "
 "to keep them."
@@ -354,69 +373,78 @@ msgstr ""
 "Vos modifications ne sont enregistrées dans aucun préréglage. Exportez-les "
 "ou enregistrez-les d'abord si vous voulez les garder."
 
-#: prefs.js:608
+#: prefs.js:616
 msgid "Cancel"
 msgstr "Annuler"
 
-#: prefs.js:608
+#: prefs.js:616
 msgid "Replace"
 msgstr "Remplacer"
 
-#: prefs.js:626
+#: prefs.js:634
 #, javascript-format
 msgid "Preset “%s” loaded."
 msgstr "Préréglage « %s » chargé."
 
-#: prefs.js:644
+#: prefs.js:651
+msgid "Not added: the table below is not valid yet."
+msgstr "Non ajouté : la table ci-dessous n'est pas encore valide."
+
+#: prefs.js:655
+#, javascript-format
+msgid "Preset “%s” added to the table."
+msgstr "Préréglage « %s » ajouté à la table."
+
+#: prefs.js:666
 #, javascript-format
 msgid "Preset “%s” deleted."
 msgstr "Préréglage « %s » supprimé."
 
-#: prefs.js:651
+#: prefs.js:673
 msgid "Save the current table as a preset"
 msgstr "Enregistrer la table actuelle comme préréglage"
 
-#: prefs.js:660
+#: prefs.js:682
 msgid "Not saved: the table below is not valid yet."
 msgstr "Non enregistré : la table ci-dessous n'est pas encore valide."
 
-#: prefs.js:670
+#: prefs.js:692
 #, javascript-format
 msgid "Preset “%s” updated."
 msgstr "Préréglage « %s » mis à jour."
 
-#: prefs.js:671
+#: prefs.js:693
 #, javascript-format
 msgid "Preset “%s” saved."
 msgstr "Préréglage « %s » enregistré."
 
-#: prefs.js:677
+#: prefs.js:699
 msgid "Share"
 msgstr "Partager"
 
-#: prefs.js:678
+#: prefs.js:700
 msgid "A preset file is plain JSON: send it, or import one someone sent you."
 msgstr ""
 "Un fichier de préréglage est du JSON simple : envoyez-le, ou importez celui "
 "qu'on vous a envoyé."
 
-#: prefs.js:680
+#: prefs.js:702
 msgid "Import…"
 msgstr "Importer…"
 
-#: prefs.js:681
+#: prefs.js:703
 msgid "Export…"
 msgstr "Exporter…"
 
-#: prefs.js:697
+#: prefs.js:719
 msgid "Import a preset"
 msgstr "Importer un préréglage"
 
-#: prefs.js:712
+#: prefs.js:734
 msgid "Could not read the file."
 msgstr "Impossible de lire le fichier."
 
-#: prefs.js:717
+#: prefs.js:739
 msgid ""
 "Not a preset: expected {\"name\": \"…\", \"accents\": {\"e\": [\"é\"], …}} "
 "or a plain table."
@@ -424,36 +452,36 @@ msgstr ""
 "Ce n'est pas un préréglage : attendu {\"name\": \"…\", \"accents\": {\"e\": "
 "[\"é\"], …}} ou une table simple."
 
-#: prefs.js:721
+#: prefs.js:743
 msgid "Imported preset"
 msgstr "Préréglage importé"
 
-#: prefs.js:734
+#: prefs.js:756
 msgid "Nothing exported: the table below is not valid yet."
 msgstr "Rien d'exporté : la table ci-dessous n'est pas encore valide."
 
-#: prefs.js:739
+#: prefs.js:761
 msgid "My accents"
 msgstr "Mes accents"
 
-#: prefs.js:741
+#: prefs.js:763
 msgid "Export the table"
 msgstr "Exporter la table"
 
-#: prefs.js:757
+#: prefs.js:779
 #, javascript-format
 msgid "Exported to %s."
 msgstr "Exporté vers %s."
 
-#: prefs.js:759
+#: prefs.js:781
 msgid "Could not write the file."
 msgstr "Impossible d'écrire le fichier."
 
-#: prefs.js:773
+#: prefs.js:795
 msgid "Keyboards"
 msgstr "Claviers"
 
-#: prefs.js:774
+#: prefs.js:796
 msgid ""
 "Layouts where press and hold and the shortcut are active (none checked = all "
 "active)."
@@ -461,10 +489,10 @@ msgstr ""
 "Dispositions où l’appui long et le raccourci sont actifs (aucune cochée = "
 "toutes actives)."
 
-#: prefs.js:797
+#: prefs.js:819
 msgid "No xkb layout detected"
 msgstr "Aucun layout xkb détecté"
 
-#: prefs.js:798
+#: prefs.js:820
 msgid "Accent Hold is active on all keyboards."
 msgstr "Accent Hold est actif sur tous les claviers."

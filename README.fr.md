@@ -122,13 +122,22 @@ Panneau de configuration intégré (icône réglages dans l'app *Extensions*, ou
   (`popup-timeout-ms`).
 - **Préréglages** : des tables toutes faites (français, espagnol, portugais,
   italien, allemand, nordique, polonais, tchèque et slovaque, turc, roumain,
-  typographie et monnaies) à charger en un clic, vos propres tables
+  typographie et monnaies, symboles mathématiques et flèches, lettres
+  grecques) à charger en un clic, ou à ajouter à la table que vous avez
+  déjà, vos propres tables
   enregistrées sous un nom (`user-presets`), et import / export en fichier
   JSON simple pour les partager :
   `{"name": "Norvégien", "accents": {"a": ["å", "æ"], "o": ["ø"]}}`. Une
   table seule est acceptée aussi. Charger un préréglage ne fait que remplir
   l'éditeur ci-dessous : vous pouvez l'ajuster ensuite ; si vos modifications
   ne sont enregistrées nulle part, on vous demande avant de les remplacer.
+- **Pas seulement des accents** : la table associe n'importe quel caractère
+  à n'importe quelle liste de caractères. Avec le préréglage mathématique
+  ajouté, maintenir `=` propose ≠ ≈ ≡, `<` propose ≤ ← ⇐, `(` propose ∈ ⊂.
+  Une touche présente dans la table ne se répète plus quand on la maintient
+  (c'est ainsi que l'appui long est détecté) ; c'est pourquoi `-`, `=` et
+  les autres symboles ne sont pas dans la table intégrée : ajoutez-les si
+  vous les voulez.
 - **Caractères** : table des variantes (`accents`, JSON : un objet qui
   associe une lettre à une liste de variantes ; mal formé = table intégrée),
   une ligne par lettre, avec un bouton pour la modifier dans une fenêtre plus
